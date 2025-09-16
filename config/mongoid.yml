@@ -1,0 +1,91 @@
+# LEARNING NOTE: Mongoid Configuration
+# This file configures how Rails connects to MongoDB
+# Similar to database.yml for SQL databases, but for MongoDB
+# Reference: https://docs.mongodb.com/mongoid/current/reference/configuration/
+
+development:
+  # LEARNING NOTE: MongoDB Clients
+  # A "client" is a connection pool to MongoDB
+  # You can have multiple clients for different databases
+  clients:
+    default:
+      # LEARNING NOTE: Using Environment Variables
+      # This allows us to use different databases without changing code
+      # For local development: mongodb://localhost:27017/supportiq_development
+      # For DigitalOcean: mongodb+srv://user:pass@cluster.mongodb.net/supportiq_dev
+      uri: <%= ENV['MONGODB_URI'] || 'mongodb://localhost:27017/supportiq_development' %>
+      
+      options:
+        # BEST PRACTICE: Connection pooling
+        # Reuse connections for better performance
+        max_pool_size: 5
+        min_pool_size: 1
+        
+        # LEARNING NOTE: Server selection timeout
+        # How long to wait when connecting to MongoDB
+        server_selection_timeout: 5
+        
+        # STABILITY: Reduce replica set monitoring verbosity
+        heartbeat_frequency: 30  # Check replica set status every 30s instead of 10s
+        connect_timeout: 10      # Connection timeout
+        socket_timeout: 30       # Socket operation timeout
+
+  # Mongoid-specific options
+  options:
+    # LEARNING NOTE: Raise errors when documents aren't found
+    # Similar to ActiveRecord's find! behavior
+    raise_not_found_error: true
+    
+    # BEST PRACTICE: Use UTC for timestamps
+    # Prevents timezone issues in production
+    use_utc: true
+    
+    # LEARNING NOTE: Preload models in development
+    # Helps with inheritance and eager loading
+    preload_models: true
+    
+    # CLEAN CODE: Prevent duplicate field definitions
+    duplicate_fields_exception: true
+    
+    # LOGGING: Reduce verbose replica set monitoring logs
+    log_level: :info
+
+test:
+  clients:
+    default:
+      # LEARNING NOTE: Use DigitalOcean MongoDB for tests
+      # We'll use a separate test database on the same cluster
+      uri: <%= ENV['MONGODB_URI']&.gsub('/admin', '/supportiq_test') || 'mongodb://localhost:27017/supportiq_test' %>
+      options:
+        # TESTING TIP: Use primary read preference for consistency
+        read:
+          mode: :primary
+        # TESTING TIP: Smaller pool size for test environment
+        max_pool_size: 1
+
+production:
+  clients:
+    default:
+      # PRODUCTION: Use environment variable for connection string
+      # DigitalOcean will provide this via environment variables
+      uri: <%= ENV['MONGODB_URI'] %>
+      options:
+        # Production optimizations
+        max_pool_size: 20
+        min_pool_size: 5
+        wait_queue_timeout: 5
+        connect_timeout: 10
+        socket_timeout: 30
+        
+        # DigitalOcean Managed MongoDB requires SSL
+        ssl: true
+        ssl_verify: true
+        
+        # Retry writes for better reliability
+        retry_writes: true
+        
+  options:
+    # Production settings
+    raise_not_found_error: true
+    use_utc: true
+    log_level: :warn

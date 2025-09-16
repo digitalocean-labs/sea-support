@@ -1,0 +1,342 @@
+<%# LEARNING NOTE: New Ticket Form %>
+<%# This view provides a form to create new support tickets %>
+<%# Uses Rails form helpers with Tailwind CSS styling %>
+
+<div class="min-h-screen bg-gradient-to-br from-amber-50 to-orange-100">
+  <div class="container mx-auto px-4 py-8">
+    <!-- Header Section -->
+    <div class="mb-8">
+      <div class="flex items-center space-x-2 mb-4">
+        <%= link_to tickets_path, class: "text-amber-600 hover:text-amber-800" do %>
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path>
+          </svg>
+        <% end %>
+        <h1 class="text-3xl font-bold text-amber-900">
+          Create New Ticket
+        </h1>
+      </div>
+      <p class="text-amber-700">
+        Help customers brew the perfect coffee experience ☕
+      </p>
+    </div>
+
+    <!-- Form Card -->
+    <div class="max-w-4xl mx-auto">
+      <div class="bg-white rounded-lg shadow-sm border border-amber-200 p-8" data-controller="demo-ticket">
+        
+        <!-- Demo Ticket Generation Section -->
+        <div class="mb-8 p-6 bg-gradient-to-r from-purple-50 to-blue-50 border border-purple-200 rounded-lg">
+          <div class="flex items-center justify-between">
+            <div class="flex items-center space-x-3">
+              <div class="flex-shrink-0">
+                <svg class="w-8 h-8 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path>
+                </svg>
+              </div>
+              <div>
+                <h3 class="text-lg font-semibold text-purple-900">Demo Ticket Generator</h3>
+                <p class="text-purple-700 text-sm">Use AI to generate realistic MoodBrew support scenarios for testing and demos</p>
+              </div>
+            </div>
+            
+            <button type="button" 
+                    class="px-6 py-3 bg-purple-600 hover:bg-purple-700 text-white font-medium rounded-lg transition-colors duration-200 flex items-center"
+                    data-demo-ticket-target="generateButton"
+                    data-action="click->demo-ticket#generateDemo">
+              <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path>
+              </svg>
+              Generate Demo Ticket
+            </button>
+          </div>
+          
+          <!-- Loading Spinner -->
+          <div class="mt-4 hidden" data-demo-ticket-target="loadingSpinner">
+            <div class="flex items-center text-purple-600">
+              <svg class="animate-spin -ml-1 mr-3 h-5 w-5" fill="none" viewBox="0 0 24 24">
+                <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+              </svg>
+              Generating realistic support scenario...
+            </div>
+          </div>
+          
+          <!-- Success Message -->
+          <div class="mt-4 p-3 bg-green-50 border border-green-200 rounded-lg text-green-800 hidden" data-demo-ticket-target="successMessage">
+            <!-- Message will be populated by JavaScript -->
+          </div>
+          
+          <!-- Error Message -->
+          <div class="mt-4 p-3 bg-red-50 border border-red-200 rounded-lg text-red-800 hidden" data-demo-ticket-target="errorMessage">
+            <!-- Error will be populated by JavaScript -->
+          </div>
+        </div>
+
+        <%= form_with model: @ticket, local: true, class: "space-y-8" do |form| %>
+          
+          <!-- Error Messages -->
+          <% if @ticket.errors.any? %>
+            <div class="bg-red-50 border border-red-200 rounded-lg p-4">
+              <div class="flex">
+                <div class="flex-shrink-0">
+                  <svg class="h-5 w-5 text-red-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.728-.833-2.498 0L4.316 15.5c-.77.833.192 2.5 1.732 2.5z"></path>
+                  </svg>
+                </div>
+                <div class="ml-3">
+                  <h3 class="text-sm font-medium text-red-800">
+                    Please fix the following errors:
+                  </h3>
+                  <div class="mt-2 text-sm text-red-700">
+                    <ul class="list-disc list-inside space-y-1">
+                      <% @ticket.errors.full_messages.each do |message| %>
+                        <li><%= message %></li>
+                      <% end %>
+                    </ul>
+                  </div>
+                </div>
+              </div>
+            </div>
+          <% end %>
+
+          <!-- Ticket Information Section -->
+          <div>
+            <h2 class="text-xl font-semibold text-gray-900 mb-6 flex items-center">
+              <svg class="w-6 h-6 text-amber-600 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+              </svg>
+              Ticket Information
+            </h2>
+            
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <!-- Subject -->
+              <div class="md:col-span-2">
+                <%= form.label :subject, class: "block text-sm font-medium text-gray-700 mb-2" %>
+                <%= form.text_field :subject, 
+                    placeholder: "Brief description of the issue...",
+                    class: field_classes_with_errors(@ticket, :subject) %>
+                <%= field_error_message(@ticket, :subject) %>
+              </div>
+
+              <!-- Priority -->
+              <div>
+                <%= form.label :priority, class: "block text-sm font-medium text-gray-700 mb-2" %>
+                <%= form.select :priority, 
+                    options_for_select([
+                      ['Low', 'low'],
+                      ['Medium', 'medium'],
+                      ['High', 'high'],
+                      ['Urgent', 'urgent']
+                    ], @ticket.priority),
+                    { prompt: 'Select priority...' },
+                    { class: field_classes_with_errors(@ticket, :priority) } %>
+                <%= field_error_message(@ticket, :priority) %>
+              </div>
+
+              <!-- Channel -->
+              <div>
+                <%= form.label :channel, class: "block text-sm font-medium text-gray-700 mb-2" %>
+                <%= form.select :channel,
+                    options_for_select([
+                      ['Email', 'email'],
+                      ['Phone', 'phone'],
+                      ['Chat', 'chat'],
+                      ['Social Media', 'social'],
+                      ['In-Person', 'in_person']
+                    ], @ticket.channel),
+                    { prompt: 'How did the customer contact us?' },
+                    { class: field_classes_with_errors(@ticket, :channel) } %>
+                <%= field_error_message(@ticket, :channel) %>
+              </div>
+
+              <!-- Issue Category -->
+              <div>
+                <%= form.label :issue_category, "Issue Category", class: "block text-sm font-medium text-gray-700 mb-2" %>
+                <%= form.select :issue_category,
+                    options_for_select([
+                      ['Brewing Issues', 'brewing'],
+                      ['Maintenance', 'maintenance'],
+                      ['Connectivity Problems', 'connectivity'],
+                      ['Mood Sensor Issues', 'mood-sensor'],
+                      ['Other', 'other']
+                    ], @ticket.issue_category),
+                    { prompt: 'Select category...' },
+                    { class: field_classes_with_errors(@ticket, :issue_category) } %>
+                <%= field_error_message(@ticket, :issue_category) %>
+              </div>
+
+              <!-- Machine Model -->
+              <div>
+                <%= form.label :machine_model, "MoodBrew Model", class: "block text-sm font-medium text-gray-700 mb-2" %>
+                <%= form.select :machine_model,
+                    options_for_select([
+                      ['MoodBrew Home', 'MoodBrew Home'],
+                      ['MoodBrew Pro', 'MoodBrew Pro'],
+                      ['MoodBrew Office', 'MoodBrew Office'],
+                      ['MoodBrew Cafe', 'MoodBrew Cafe']
+                    ], @ticket.machine_model),
+                    { prompt: 'Select machine model...' },
+                    { class: field_classes_with_errors(@ticket, :machine_model) } %>
+                <%= field_error_message(@ticket, :machine_model) %>
+              </div>
+
+              <!-- Customer Mood -->
+              <div class="md:col-span-2">
+                <%= form.label :customer_mood, "Customer Mood (optional)", class: "block text-sm font-medium text-gray-700 mb-2" %>
+                <%= form.select :customer_mood,
+                    options_for_select([
+                      ['Happy', 'happy'],
+                      ['Neutral', 'neutral'],
+                      ['Concerned', 'concerned'],
+                      ['Frustrated', 'frustrated'],
+                      ['Angry', 'angry']
+                    ], @ticket.customer_mood),
+                    { prompt: 'How does the customer seem?' },
+                    { class: field_classes_with_errors(@ticket, :customer_mood) } %>
+                <%= field_error_message(@ticket, :customer_mood) %>
+              </div>
+
+              <!-- Description -->
+              <div class="md:col-span-2">
+                <%= form.label :description, class: "block text-sm font-medium text-gray-700 mb-2" %>
+                <%= form.text_area :description, 
+                    rows: 6,
+                    placeholder: "Detailed description of the issue, including any error messages, steps the customer tried, and other relevant information...",
+                    class: field_classes_with_errors(@ticket, :description, "w-full px-4 py-3 border rounded-lg focus:ring-2 focus:border-transparent transition-colors resize-none") %>
+                <%= field_error_message(@ticket, :description) %>
+              </div>
+            </div>
+          </div>
+
+          <!-- Customer Information Section -->
+          <div>
+            <h2 class="text-xl font-semibold text-gray-900 mb-6 flex items-center">
+              <svg class="w-6 h-6 text-amber-600 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"></path>
+              </svg>
+              Customer Information
+            </h2>
+
+            <%= form.fields_for :customer_info do |customer_form| %>
+              <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <!-- Customer Name -->
+                <div>
+                  <%= customer_form.label :customer_name, "Customer Name", class: "block text-sm font-medium text-gray-700 mb-2" %>
+                  <%= customer_form.text_field :customer_name, 
+                      placeholder: "Customer's full name",
+                      class: field_classes_with_errors(@ticket.customer_info, :customer_name) %>
+                  <%= field_error_message(@ticket.customer_info, :customer_name) %>
+                </div>
+
+                <!-- Email -->
+                <div>
+                  <%= customer_form.label :email, class: "block text-sm font-medium text-gray-700 mb-2" %>
+                  <%= customer_form.email_field :email, 
+                      placeholder: "customer@example.com",
+                      class: field_classes_with_errors(@ticket.customer_info, :email) %>
+                  <%= field_error_message(@ticket.customer_info, :email) %>
+                </div>
+
+                <!-- Phone -->
+                <div>
+                  <%= customer_form.label :phone, class: "block text-sm font-medium text-gray-700 mb-2" %>
+                  <%= customer_form.telephone_field :phone, 
+                      placeholder: "+1-555-123-4567",
+                      class: field_classes_with_errors(@ticket.customer_info, :phone) %>
+                  <%= field_error_message(@ticket.customer_info, :phone) %>
+                </div>
+
+                <!-- Account Tier -->
+                <div>
+                  <%= customer_form.label :account_tier, class: "block text-sm font-medium text-gray-700 mb-2" %>
+                  <%= customer_form.select :account_tier,
+                      options_for_select([
+                        ['Free', 'free'],
+                        ['Premium', 'premium'],
+                        ['Enterprise', 'enterprise']
+                      ], @ticket.customer_info&.account_tier),
+                      { prompt: 'Select account tier...' },
+                      { class: field_classes_with_errors(@ticket.customer_info, :account_tier) } %>
+                  <%= field_error_message(@ticket.customer_info, :account_tier) %>
+                </div>
+
+                <!-- MoodBrew Serial Number -->
+                <div>
+                  <%= customer_form.label :moodbrew_serial, "MoodBrew Serial Number", class: "block text-sm font-medium text-gray-700 mb-2" %>
+                  <%= customer_form.text_field :moodbrew_serial, 
+                      placeholder: "MBP-2024-123456",
+                      class: field_classes_with_errors(@ticket.customer_info, :moodbrew_serial, "w-full px-4 py-3 border rounded-lg focus:ring-2 focus:border-transparent transition-colors font-mono") %>
+                  <%= field_error_message(@ticket.customer_info, :moodbrew_serial) %>
+                </div>
+
+                <!-- Purchase Date -->
+                <div>
+                  <%= customer_form.label :purchase_date, class: "block text-sm font-medium text-gray-700 mb-2" %>
+                  <%= customer_form.date_field :purchase_date, 
+                      class: field_classes_with_errors(@ticket.customer_info, :purchase_date) %>
+                  <%= field_error_message(@ticket.customer_info, :purchase_date) %>
+                </div>
+
+                <!-- Warranty Status -->
+                <div class="md:col-span-2">
+                  <%= customer_form.label :warranty_status, class: "block text-sm font-medium text-gray-700 mb-2" %>
+                  <%= customer_form.select :warranty_status,
+                      options_for_select([
+                        ['Active', 'active'],
+                        ['Expired', 'expired'],
+                        ['Extended', 'extended']
+                      ], @ticket.customer_info&.warranty_status),
+                      { prompt: 'Select warranty status...' },
+                      { class: field_classes_with_errors(@ticket.customer_info, :warranty_status) } %>
+                  <%= field_error_message(@ticket.customer_info, :warranty_status) %>
+                </div>
+              </div>
+            <% end %>
+          </div>
+
+          <!-- Assignment Section (Admin/Supervisor only) -->
+          <% if current_agent.admin? || current_agent.supervisor? %>
+            <div>
+              <h2 class="text-xl font-semibold text-gray-900 mb-6 flex items-center">
+                <svg class="w-6 h-6 text-amber-600 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197m13.5-9a2.5 2.5 0 11-5 0 2.5 2.5 0 015 0z"></path>
+                </svg>
+                Assignment
+              </h2>
+
+              <div class="max-w-md">
+                <%= form.label :assigned_agent_id, "Assign to Agent", class: "block text-sm font-medium text-gray-700 mb-2" %>
+                <%= form.collection_select :assigned_agent_id, 
+                    Agent.all.order_by(name: :asc), 
+                    :id, 
+                    :display_name, 
+                    { prompt: 'Auto-assign to me', selected: current_agent.id },
+                    { class: field_classes_with_errors(@ticket, :assigned_agent_id) } %>
+                <%= field_error_message(@ticket, :assigned_agent_id) %>
+              </div>
+            </div>
+          <% end %>
+
+          <!-- Form Actions -->
+          <div class="flex justify-between items-center pt-6 border-t border-gray-200">
+            <div class="text-sm text-gray-500">
+              💡 The AI will automatically analyze this ticket and suggest solutions
+            </div>
+            
+            <div class="flex space-x-4">
+              <%= link_to tickets_path, 
+                  class: "px-6 py-3 border border-gray-300 text-gray-700 font-medium rounded-lg hover:bg-gray-50 transition-colors duration-200" do %>
+                Cancel
+              <% end %>
+              
+              <%= form.submit "Create Ticket", 
+                  class: "px-6 py-3 bg-amber-600 hover:bg-amber-700 text-white font-medium rounded-lg transition-colors duration-200 flex items-center" %>
+            </div>
+          </div>
+
+        <% end %>
+      </div>
+    </div>
+  </div>
+</div>

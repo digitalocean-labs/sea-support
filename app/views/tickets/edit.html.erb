@@ -1,0 +1,293 @@
+<%# LEARNING NOTE: Edit Ticket Form %>
+<%# This view provides a form to edit existing support tickets %>
+<%# Similar to new ticket form but with pre-populated data %>
+
+<div class="min-h-screen bg-gradient-to-br from-amber-50 to-orange-100">
+  <div class="container mx-auto px-4 py-8">
+    <!-- Header Section -->
+    <div class="mb-8">
+      <div class="flex items-center space-x-2 mb-4">
+        <%= link_to ticket_path(@ticket), class: "text-amber-600 hover:text-amber-800" do %>
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path>
+          </svg>
+        <% end %>
+        <h1 class="text-3xl font-bold text-amber-900">
+          Edit Ticket <%= @ticket.ticket_number %>
+        </h1>
+      </div>
+      <p class="text-amber-700">
+        Update ticket information and customer details ☕
+      </p>
+    </div>
+
+    <!-- Form Card -->
+    <div class="max-w-4xl mx-auto">
+      <div class="bg-white rounded-lg shadow-sm border border-amber-200 p-8">
+        <%= form_with model: @ticket, local: true, class: "space-y-8" do |form| %>
+          
+          <!-- Error Messages -->
+          <% if @ticket.errors.any? %>
+            <div class="bg-red-50 border border-red-200 rounded-lg p-4">
+              <div class="flex">
+                <div class="flex-shrink-0">
+                  <svg class="h-5 w-5 text-red-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.728-.833-2.498 0L4.316 15.5c-.77.833.192 2.5 1.732 2.5z"></path>
+                  </svg>
+                </div>
+                <div class="ml-3">
+                  <h3 class="text-sm font-medium text-red-800">
+                    Please fix the following errors:
+                  </h3>
+                  <div class="mt-2 text-sm text-red-700">
+                    <ul class="list-disc list-inside space-y-1">
+                      <% @ticket.errors.full_messages.each do |message| %>
+                        <li><%= message %></li>
+                      <% end %>
+                    </ul>
+                  </div>
+                </div>
+              </div>
+            </div>
+          <% end %>
+
+          <!-- Ticket Status and Priority Section -->
+          <div>
+            <h2 class="text-xl font-semibold text-gray-900 mb-6 flex items-center">
+              <svg class="w-6 h-6 text-amber-600 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+              </svg>
+              Ticket Status
+            </h2>
+            
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+              <!-- Status -->
+              <div>
+                <%= form.label :status, class: "block text-sm font-medium text-gray-700 mb-2" %>
+                <%= form.select :status, 
+                    options_for_select([
+                      ['New', 'new'],
+                      ['In Progress', 'in_progress'],
+                      ['Resolved', 'resolved'],
+                      ['Closed', 'closed']
+                    ], @ticket.status),
+                    {},
+                    { class: "w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-amber-500 focus:border-transparent transition-colors" } %>
+              </div>
+
+              <!-- Priority -->
+              <div>
+                <%= form.label :priority, class: "block text-sm font-medium text-gray-700 mb-2" %>
+                <%= form.select :priority, 
+                    options_for_select([
+                      ['Low', 'low'],
+                      ['Medium', 'medium'],
+                      ['High', 'high'],
+                      ['Urgent', 'urgent']
+                    ], @ticket.priority),
+                    {},
+                    { class: "w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-amber-500 focus:border-transparent transition-colors" } %>
+              </div>
+
+              <!-- Assignment (Admin/Supervisor only) -->
+              <% if current_agent.admin? || current_agent.supervisor? %>
+                <div>
+                  <%= form.label :assigned_agent_id, "Assigned Agent", class: "block text-sm font-medium text-gray-700 mb-2" %>
+                  <%= form.collection_select :assigned_agent_id, 
+                      Agent.all.order_by(name: :asc), 
+                      :id, 
+                      :display_name, 
+                      { selected: @ticket.assigned_agent_id },
+                      { class: "w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-amber-500 focus:border-transparent transition-colors" } %>
+                </div>
+              <% end %>
+            </div>
+          </div>
+
+          <!-- Ticket Information Section -->
+          <div>
+            <h2 class="text-xl font-semibold text-gray-900 mb-6 flex items-center">
+              <svg class="w-6 h-6 text-amber-600 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+              </svg>
+              Ticket Information
+            </h2>
+            
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <!-- Subject -->
+              <div class="md:col-span-2">
+                <%= form.label :subject, class: "block text-sm font-medium text-gray-700 mb-2" %>
+                <%= form.text_field :subject, 
+                    class: "w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-amber-500 focus:border-transparent transition-colors" %>
+              </div>
+
+              <!-- Channel -->
+              <div>
+                <%= form.label :channel, class: "block text-sm font-medium text-gray-700 mb-2" %>
+                <%= form.select :channel,
+                    options_for_select([
+                      ['Email', 'email'],
+                      ['Phone', 'phone'],
+                      ['Chat', 'chat'],
+                      ['Social Media', 'social'],
+                      ['In-Person', 'in_person']
+                    ], @ticket.channel),
+                    { prompt: 'Select channel...' },
+                    { class: "w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-amber-500 focus:border-transparent transition-colors" } %>
+              </div>
+
+              <!-- Issue Category -->
+              <div>
+                <%= form.label :issue_category, "Issue Category", class: "block text-sm font-medium text-gray-700 mb-2" %>
+                <%= form.select :issue_category,
+                    options_for_select([
+                      ['Brewing Issues', 'brewing'],
+                      ['Maintenance', 'maintenance'],
+                      ['Connectivity Problems', 'connectivity'],
+                      ['Mood Sensor Issues', 'mood-sensor'],
+                      ['Other', 'other']
+                    ], @ticket.issue_category),
+                    { prompt: 'Select category...' },
+                    { class: "w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-amber-500 focus:border-transparent transition-colors" } %>
+              </div>
+
+              <!-- Machine Model -->
+              <div>
+                <%= form.label :machine_model, "MoodBrew Model", class: "block text-sm font-medium text-gray-700 mb-2" %>
+                <%= form.select :machine_model,
+                    options_for_select([
+                      ['MoodBrew Home', 'MoodBrew Home'],
+                      ['MoodBrew Pro', 'MoodBrew Pro'],
+                      ['MoodBrew Office', 'MoodBrew Office'],
+                      ['MoodBrew Cafe', 'MoodBrew Cafe']
+                    ], @ticket.machine_model),
+                    { prompt: 'Select machine model...' },
+                    { class: "w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-amber-500 focus:border-transparent transition-colors" } %>
+              </div>
+
+              <!-- Customer Mood -->
+              <div>
+                <%= form.label :customer_mood, "Customer Mood", class: "block text-sm font-medium text-gray-700 mb-2" %>
+                <%= form.select :customer_mood,
+                    options_for_select([
+                      ['Happy', 'happy'],
+                      ['Neutral', 'neutral'],
+                      ['Concerned', 'concerned'],
+                      ['Frustrated', 'frustrated'],
+                      ['Angry', 'angry']
+                    ], @ticket.customer_mood),
+                    { prompt: 'Select customer mood...' },
+                    { class: "w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-amber-500 focus:border-transparent transition-colors" } %>
+              </div>
+
+              <!-- Description -->
+              <div class="md:col-span-2">
+                <%= form.label :description, class: "block text-sm font-medium text-gray-700 mb-2" %>
+                <%= form.text_area :description, 
+                    rows: 6,
+                    class: "w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-amber-500 focus:border-transparent transition-colors resize-none" %>
+              </div>
+            </div>
+          </div>
+
+          <!-- Customer Information Section -->
+          <div>
+            <h2 class="text-xl font-semibold text-gray-900 mb-6 flex items-center">
+              <svg class="w-6 h-6 text-amber-600 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"></path>
+              </svg>
+              Customer Information
+            </h2>
+
+            <%= form.fields_for :customer_info do |customer_form| %>
+              <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <!-- Customer Name -->
+                <div>
+                  <%= customer_form.label :customer_name, "Customer Name", class: "block text-sm font-medium text-gray-700 mb-2" %>
+                  <%= customer_form.text_field :customer_name, 
+                      class: "w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-amber-500 focus:border-transparent transition-colors" %>
+                </div>
+
+                <!-- Email -->
+                <div>
+                  <%= customer_form.label :email, class: "block text-sm font-medium text-gray-700 mb-2" %>
+                  <%= customer_form.email_field :email, 
+                      class: "w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-amber-500 focus:border-transparent transition-colors" %>
+                </div>
+
+                <!-- Phone -->
+                <div>
+                  <%= customer_form.label :phone, class: "block text-sm font-medium text-gray-700 mb-2" %>
+                  <%= customer_form.telephone_field :phone, 
+                      class: "w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-amber-500 focus:border-transparent transition-colors" %>
+                </div>
+
+                <!-- Account Tier -->
+                <div>
+                  <%= customer_form.label :account_tier, class: "block text-sm font-medium text-gray-700 mb-2" %>
+                  <%= customer_form.select :account_tier,
+                      options_for_select([
+                        ['Basic', 'basic'],
+                        ['Premium', 'premium'],
+                        ['Enterprise', 'enterprise']
+                      ], @ticket.customer_info&.account_tier),
+                      { prompt: 'Select account tier...' },
+                      { class: "w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-amber-500 focus:border-transparent transition-colors" } %>
+                </div>
+
+                <!-- MoodBrew Serial Number -->
+                <div>
+                  <%= customer_form.label :moodbrew_serial, "MoodBrew Serial Number", class: "block text-sm font-medium text-gray-700 mb-2" %>
+                  <%= customer_form.text_field :moodbrew_serial, 
+                      class: "w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-amber-500 focus:border-transparent transition-colors font-mono" %>
+                </div>
+
+                <!-- Purchase Date -->
+                <div>
+                  <%= customer_form.label :purchase_date, class: "block text-sm font-medium text-gray-700 mb-2" %>
+                  <%= customer_form.date_field :purchase_date, 
+                      value: @ticket.customer_info&.purchase_date&.strftime("%Y-%m-%d"),
+                      class: "w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-amber-500 focus:border-transparent transition-colors" %>
+                </div>
+
+                <!-- Warranty Status -->
+                <div class="md:col-span-2">
+                  <%= customer_form.label :warranty_status, class: "block text-sm font-medium text-gray-700 mb-2" %>
+                  <%= customer_form.select :warranty_status,
+                      options_for_select([
+                        ['Active', 'active'],
+                        ['Expired', 'expired'],
+                        ['Extended', 'extended']
+                      ], @ticket.customer_info&.warranty_status),
+                      { prompt: 'Select warranty status...' },
+                      { class: "w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-amber-500 focus:border-transparent transition-colors" } %>
+                </div>
+              </div>
+            <% end %>
+          </div>
+
+          <!-- Form Actions -->
+          <div class="flex justify-between items-center pt-6 border-t border-gray-200">
+            <div class="text-sm text-gray-500 flex items-center">
+              <svg class="w-4 h-4 text-amber-500 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+              </svg>
+              Changes will be logged in the activity timeline
+            </div>
+            
+            <div class="flex space-x-4">
+              <%= link_to ticket_path(@ticket), 
+                  class: "px-6 py-3 border border-gray-300 text-gray-700 font-medium rounded-lg hover:bg-gray-50 transition-colors duration-200" do %>
+                Cancel
+              <% end %>
+              
+              <%= form.submit "Update Ticket", 
+                  class: "px-6 py-3 bg-amber-600 hover:bg-amber-700 text-white font-medium rounded-lg transition-colors duration-200 flex items-center" %>
+            </div>
+          </div>
+
+        <% end %>
+      </div>
+    </div>
+  </div>
+</div>

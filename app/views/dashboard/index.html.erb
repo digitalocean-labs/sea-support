@@ -1,0 +1,141 @@
+<%# LEARNING NOTE: Dashboard View %>
+<%# Main application dashboard after login %>
+<%# Shows agent info, metrics, and navigation %>
+
+<div class="min-h-screen bg-gray-50">
+  <%# LEARNING NOTE: Coffee-themed Navigation Header %>
+  <nav class="bg-coffee-100 shadow-coffee">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div class="flex justify-between h-16">
+        <div class="flex items-center">
+          <h1 class="text-xl font-semibold text-coffee-800">
+            ☕ MoodBrew Support Dashboard
+          </h1>
+        </div>
+        <div class="flex items-center space-x-4">
+          <span class="text-sm text-coffee-700">
+            Welcome, <%= current_agent.display_name %>!
+          </span>
+          <%= link_to "Logout", logout_path, data: { turbo_method: :delete }, 
+                class: "text-sm text-coffee-600 hover:text-coffee-500 font-medium" %>
+        </div>
+      </div>
+    </div>
+  </nav>
+
+  <%# Main Content %>
+  <main class="max-w-7xl mx-auto py-6 sm:px-6 lg:px-8">
+    <div class="px-4 py-6 sm:px-0">
+      <%# Welcome Message %>
+      <div class="bg-white overflow-hidden shadow rounded-lg mb-6">
+        <div class="px-4 py-5 sm:p-6">
+          <h2 class="text-lg font-medium text-gray-900 mb-2">
+            <%= @greeting %>
+          </h2>
+          <p class="text-sm text-gray-600">
+            You're logged in as a <strong><%= current_agent.role.titleize %></strong>
+            <% if current_agent.admin? %>
+              with full administrative access.
+            <% elsif current_agent.supervisor? %>
+              with supervisory privileges.
+            <% else %>
+              ready to help customers!
+            <% end %>
+          </p>
+        </div>
+      </div>
+
+      <%# MOODBREW METRICS: Fun coffee-themed stats %>
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
+        <div class="bg-white overflow-hidden shadow rounded-lg">
+          <div class="p-5">
+            <div class="flex items-center">
+              <div class="flex-shrink-0">
+                <span class="text-2xl">🎫</span>
+              </div>
+              <div class="ml-5 w-0 flex-1">
+                <dl>
+                  <dt class="text-sm font-medium text-gray-500 truncate">
+                    Tickets Resolved
+                  </dt>
+                  <dd class="text-lg font-medium text-gray-900">
+                    <%= @tickets_resolved %>
+                  </dd>
+                </dl>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="bg-white overflow-hidden shadow rounded-lg">
+          <div class="p-5">
+            <div class="flex items-center">
+              <div class="flex-shrink-0">
+                <span class="text-2xl">☕</span>
+              </div>
+              <div class="ml-5 w-0 flex-1">
+                <dl>
+                  <dt class="text-sm font-medium text-gray-500 truncate">
+                    Coffee Breaks Today
+                  </dt>
+                  <dd class="text-lg font-medium text-gray-900">
+                    <%= @coffee_breaks_today %>
+                  </dd>
+                </dl>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="bg-white overflow-hidden shadow rounded-lg">
+          <div class="p-5">
+            <div class="flex items-center">
+              <div class="flex-shrink-0">
+                <span class="text-2xl">😊</span>
+              </div>
+              <div class="ml-5 w-0 flex-1">
+                <dl>
+                  <dt class="text-sm font-medium text-gray-500 truncate">
+                    Customer Satisfaction
+                  </dt>
+                  <dd class="text-lg font-medium text-gray-900">
+                    <%= number_to_percentage(current_agent.performance_metrics&.customer_satisfaction_score || 0, precision: 1) %>
+                  </dd>
+                </dl>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Quick Stats Section -->
+      <div class="bg-white overflow-hidden shadow rounded-lg">
+        <div class="px-4 py-5 sm:p-6">
+          <h3 class="text-lg font-medium text-gray-900 mb-4">
+            📊 Quick Stats
+          </h3>
+          <div class="grid grid-cols-3 gap-4">
+            <div class="text-center">
+              <div class="text-2xl font-bold text-blue-600"><%= @total_tickets_count %></div>
+              <div class="text-sm text-gray-500">Total Tickets</div>
+            </div>
+            <div class="text-center">
+              <div class="text-2xl font-bold text-orange-600"><%= @pending_tickets_count %></div>
+              <div class="text-sm text-gray-500">Pending</div>
+            </div>
+            <div class="text-center">
+              <div class="text-2xl font-bold text-green-600"><%= @tickets_resolved %></div>
+              <div class="text-sm text-gray-500">Resolved Today</div>
+            </div>
+          </div>
+          <p class="mt-4 text-xs text-gray-500">
+            <span class="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-green-100 text-green-800">
+              ✅ Fully Operational
+            </span>
+            AI analysis, demo generation, and background processing active
+          </p>
+        </div>
+      </div>
+    </div>
+  </main>
+</div>

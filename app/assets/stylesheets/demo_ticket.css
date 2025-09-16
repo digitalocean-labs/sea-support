@@ -1,0 +1,19 @@
+/* Demo ticket generation styling */
+.demo-populated {
+  @apply ring-2 ring-purple-300 bg-purple-50 transition-all duration-500;
+  animation: demo-highlight 2s ease-out;
+}
+
+@keyframes demo-highlight {
+  0% {
+    @apply ring-4 ring-purple-400 bg-purple-100;
+  }
+  100% {
+    @apply ring-2 ring-purple-300 bg-purple-50;
+  }
+}
+
+/* Loading state improvements */
+.demo-loading {
+  @apply opacity-75 cursor-not-allowed;
+}

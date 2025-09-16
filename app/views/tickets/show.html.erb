@@ -1,0 +1,1377 @@
+<%# LEARNING NOTE: Ticket Detail View %>
+<%# This view shows complete ticket information with messages and activity timeline %>
+<%# Features responsive design with MoodBrew coffee theme %>
+
+<div class="min-h-screen bg-gradient-to-br from-amber-50 to-orange-100">
+  <div class="container mx-auto px-4 py-8">
+    <!-- Header Section -->
+    <div class="mb-6">
+      <div class="flex flex-col md:flex-row md:items-center md:justify-between">
+        <div>
+          <div class="flex items-center space-x-2 mb-2">
+            <%= link_to tickets_path, class: "text-amber-600 hover:text-amber-800" do %>
+              <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path>
+              </svg>
+            <% end %>
+            <h1 class="text-3xl font-bold text-amber-900">
+              <%= @ticket.ticket_number %>
+            </h1>
+          </div>
+          <p class="text-xl text-amber-700 mb-2">
+            <%= @ticket.subject %>
+          </p>
+          <div class="flex items-center space-x-4 text-sm text-gray-600">
+            <span>Created <%= time_ago_in_words(@ticket.created_at) %> ago</span>
+            <span>•</span>
+            <span>Last updated <%= time_ago_in_words(@ticket.updated_at) %> ago</span>
+          </div>
+        </div>
+        
+        <div class="mt-4 md:mt-0 flex space-x-2">
+          <%= link_to edit_ticket_path(@ticket), 
+              class: "inline-flex items-center px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white font-medium rounded-lg transition-colors duration-200" do %>
+            <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path>
+            </svg>
+            Edit Ticket
+          <% end %>
+          
+          <%# AI Analysis Button with Job Status Awareness %>
+          <% if @ticket.ai_analysis&.in_progress? %>
+            <%# Show status for jobs in progress %>
+            <div class="inline-flex items-center px-4 py-2 bg-yellow-100 border border-yellow-300 text-yellow-800 font-medium rounded-lg">
+              <svg class="w-4 h-4 mr-2 animate-pulse" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6l4 2"></path>
+                <circle cx="12" cy="12" r="10"></circle>
+              </svg>
+              <span>🤖 AI Analysis <%= @ticket.ai_analysis.analysis_status.humanize %></span>
+            </div>
+          <% elsif @ticket.ai_analysis.nil? || (@ticket.ai_analysis.completed? && @ticket.ai_analysis.stale?) %>
+            <%# Show analyze button for new tickets or stale completed analysis %>
+            <form action="<%= analyze_ticket_path(@ticket) %>" method="post" style="display: inline;">
+              <%= hidden_field_tag :authenticity_token, form_authenticity_token %>
+              <button type="submit" class="inline-flex items-center px-4 py-2 bg-purple-600 hover:bg-purple-700 text-white font-medium rounded-lg transition-colors duration-200">
+                <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z"></path>
+                </svg>
+                <span>🤖 Queue AI Analysis</span>
+              </button>
+            </form>
+          <% elsif @ticket.ai_analysis&.failed? %>
+            <%# Show retry button for failed jobs %>
+            <form action="<%= analyze_ticket_path(@ticket) %>" method="post" style="display: inline;">
+              <%= hidden_field_tag :authenticity_token, form_authenticity_token %>
+              <button type="submit" class="inline-flex items-center px-4 py-2 bg-red-600 hover:bg-red-700 text-white font-medium rounded-lg transition-colors duration-200">
+                <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path>
+                </svg>
+                <span>🔄 Retry AI Analysis</span>
+              </button>
+            </form>
+          <% elsif @ticket.ai_analysis&.completed? %>
+            <%# Show re-analyze option for completed analysis %>
+            <form action="<%= analyze_ticket_path(@ticket) %>" method="post" style="display: inline;">
+              <%= hidden_field_tag :authenticity_token, form_authenticity_token %>
+              <button type="submit" class="inline-flex items-center px-4 py-2 bg-purple-500 hover:bg-purple-600 text-white font-medium rounded-lg transition-colors duration-200">
+                <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path>
+                </svg>
+                <span>🔄 Re-queue Analysis</span>
+              </button>
+            </form>
+          <% end %>
+          
+          <% if current_agent.admin? %>
+            <%= link_to ticket_path(@ticket), 
+                method: :delete,
+                confirm: "Are you sure you want to delete this ticket? This action cannot be undone.",
+                class: "inline-flex items-center px-4 py-2 bg-red-600 hover:bg-red-700 text-white font-medium rounded-lg transition-colors duration-200" do %>
+              <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path>
+              </svg>
+              Delete
+            <% end %>
+          <% end %>
+        </div>
+      </div>
+    </div>
+
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+      <!-- Main Content Column -->
+      <div class="lg:col-span-2 space-y-6">
+        <!-- Ticket Description -->
+        <div class="bg-white rounded-lg shadow-sm border border-amber-200 p-6">
+          <h2 class="text-lg font-semibold text-gray-900 mb-4">Description</h2>
+          <div class="prose prose-sm max-w-none">
+            <p class="text-gray-700 whitespace-pre-wrap"><%= @ticket.description %></p>
+          </div>
+        </div>
+
+
+        <!-- Messages Timeline -->
+        <div class="bg-white rounded-lg shadow-sm border border-amber-200 p-6">
+          <h2 class="text-lg font-semibold text-gray-900 mb-4">Messages</h2>
+          
+          <% if @ticket.messages.any? %>
+            <div class="space-y-4">
+              <% @ticket.messages.order_by(sent_at: :asc).each do |message| %>
+                <div class="<%= message.sender == 'customer' ? 'flex justify-start' : 'flex justify-end' %>">
+                  <div class="max-w-xs lg:max-w-md <%= message.sender == 'customer' ? 'bg-gray-100' : 'bg-amber-100' %> rounded-lg p-4">
+                    <div class="flex items-center justify-between mb-2">
+                      <span class="text-sm font-medium <%= message.sender == 'customer' ? 'text-gray-900' : 'text-amber-900' %>">
+                        <%= message.sender_name %>
+                      </span>
+                      <span class="text-xs text-gray-500">
+                        <%= message.sent_at.strftime("%b %d, %Y at %I:%M %p") %>
+                      </span>
+                    </div>
+                    <p class="text-sm text-gray-700 whitespace-pre-wrap"><%= message.content %></p>
+                  </div>
+                </div>
+              <% end %>
+            </div>
+          <% else %>
+            <p class="text-gray-500 text-center py-4">No messages yet</p>
+          <% end %>
+        </div>
+
+        <!-- AI Suggested Response Box -->
+        <% if @ticket.ai_analysis&.suggested_response.present? %>
+          <div id="ai-response-box" class="bg-white rounded-lg shadow-sm border border-purple-200 p-6">
+            <div class="flex items-center justify-between mb-4">
+              <div class="flex items-center space-x-2">
+                <h2 class="text-lg font-semibold text-gray-900">🤖 AI Suggested Response</h2>
+                <% confidence = (@ticket.ai_analysis.confidence_score || 0) * 100 %>
+                <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium <%= confidence >= 85 ? 'bg-green-100 text-green-800' : confidence >= 70 ? 'bg-yellow-100 text-yellow-800' : 'bg-red-100 text-red-800' %>">
+                  <%= confidence.round %>% confidence
+                </span>
+              </div>
+              <button onclick="toggleResponseBox()" class="text-gray-400 hover:text-gray-600">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                </svg>
+              </button>
+            </div>
+
+            <% if confidence < 70 %>
+              <div class="mb-4 p-3 bg-yellow-50 border border-yellow-200 rounded-lg">
+                <div class="flex">
+                  <svg class="flex-shrink-0 h-5 w-5 text-yellow-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path>
+                  </svg>
+                  <p class="ml-2 text-sm text-yellow-700">
+                    Low confidence response. Please review and edit carefully before sending.
+                  </p>
+                </div>
+              </div>
+            <% end %>
+
+            <%= form_with url: send_ai_response_ticket_path(@ticket), local: false, data: { turbo: false }, id: "ai-response-form" do |f| %>
+              <div class="space-y-4">
+                <div>
+                  <label class="block text-sm font-medium text-gray-700 mb-2">
+                    Response Content
+                    <span class="text-xs text-gray-500 ml-2">You can edit this before sending</span>
+                  </label>
+                  <% # Convert citations to markdown links in the suggested response %>
+                  <% suggested_response_with_links = convert_citations_to_markdown_links(@ticket.ai_analysis.suggested_response, @ticket.ai_analysis.source_files) %>
+                  <%= f.text_area :response_content, 
+                    value: suggested_response_with_links,
+                    rows: 8,
+                    class: "w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-purple-500 focus:border-purple-500",
+                    placeholder: "Enter your response...",
+                    id: "response-textarea" %>
+                  <div class="mt-1 flex items-center justify-between text-xs text-gray-500">
+                    <span id="char-counter">0 characters</span>
+                    <span class="flex items-center">
+                      <svg class="w-3 h-3 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z"></path>
+                      </svg>
+                      AI Generated • Editable
+                    </span>
+                  </div>
+                  
+                  <%# Citations Section %>
+                  <% if @ticket.ai_analysis.source_files.present? %>
+                    <div class="mt-3 p-3 bg-blue-50 border border-blue-200 rounded-lg">
+                      <div class="flex items-center mb-2">
+                        <svg class="w-4 h-4 text-blue-600 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.746 0 3.332.477 4.5 1.253v13C19.832 18.477 18.246 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"></path>
+                        </svg>
+                        <span class="text-sm font-medium text-blue-800">Knowledge Base Sources</span>
+                      </div>
+                      <div class="space-y-1">
+                        <% @ticket.ai_analysis.source_files.each_with_index do |source_file, index| %>
+                          <div class="flex items-center text-xs">
+                            <span class="inline-flex items-center justify-center w-5 h-5 bg-blue-100 text-blue-700 rounded-full mr-2 font-mono">
+                              C<%= index + 1 %>
+                            </span>
+                            <span class="text-blue-700 font-medium"><%= source_file.gsub(/\.(md|txt)$/, '') %></span>
+                          </div>
+                        <% end %>
+                      </div>
+                      <div class="mt-2 text-xs text-blue-600">
+                        💡 Citations like <code>[[C1]]</code> in the response above refer to these knowledge base articles
+                      </div>
+                    </div>
+                  <% end %>
+                </div>
+
+                <div class="flex items-center justify-between pt-4 border-t border-gray-200">
+                  <div class="flex space-x-2">
+                    <%= f.submit "Send Response", 
+                      class: "inline-flex items-center px-4 py-2 bg-purple-600 hover:bg-purple-700 text-white font-medium rounded-lg transition-colors duration-200",
+                      onclick: "return confirmSendResponse()" %>
+                    
+                    <button type="button" 
+                      onclick="copyResponseToClipboard()"
+                      class="inline-flex items-center px-4 py-2 bg-gray-100 hover:bg-gray-200 text-gray-700 font-medium rounded-lg transition-colors duration-200">
+                      <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"></path>
+                      </svg>
+                      Copy to Clipboard
+                    </button>
+                  </div>
+                  
+                  <button type="button" 
+                    onclick="clearResponse()"
+                    class="text-gray-500 hover:text-gray-700 text-sm">
+                    Clear
+                  </button>
+                </div>
+              </div>
+            <% end %>
+          </div>
+        <% end %>
+
+        <!-- Activity Timeline -->
+        <div class="bg-white rounded-lg shadow-sm border border-amber-200 p-6">
+          <h2 class="text-lg font-semibold text-gray-900 mb-4">Activity Timeline</h2>
+          
+          <% if @ticket.activities.any? %>
+            <div class="flow-root">
+              <ul class="-mb-8">
+                <% @ticket.activities.order_by(performed_at: :desc).each_with_index do |activity, index| %>
+                  <li>
+                    <div class="relative pb-8 <%= 'pb-0' if index == @ticket.activities.count - 1 %>">
+                      <% unless index == @ticket.activities.count - 1 %>
+                        <span class="absolute top-5 left-5 -ml-px h-full w-0.5 bg-gray-200" aria-hidden="true"></span>
+                      <% end %>
+                      <div class="relative flex items-start space-x-3">
+                        <!-- Activity Icon -->
+                        <div class="relative">
+                          <% case activity.action %>
+                          <% when 'created' %>
+                            <div class="h-10 w-10 rounded-full bg-green-500 flex items-center justify-center ring-8 ring-white">
+                              <svg class="h-5 w-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path>
+                              </svg>
+                            </div>
+                          <% when 'status_changed' %>
+                            <div class="h-10 w-10 rounded-full bg-blue-500 flex items-center justify-center ring-8 ring-white">
+                              <svg class="h-5 w-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path>
+                              </svg>
+                            </div>
+                          <% when 'assigned' %>
+                            <div class="h-10 w-10 rounded-full bg-purple-500 flex items-center justify-center ring-8 ring-white">
+                              <svg class="h-5 w-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"></path>
+                              </svg>
+                            </div>
+                          <% when 'ai_analyzed' %>
+                            <div class="h-10 w-10 rounded-full bg-indigo-500 flex items-center justify-center ring-8 ring-white">
+                              <svg class="h-5 w-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z"></path>
+                              </svg>
+                            </div>
+                          <% else %>
+                            <div class="h-10 w-10 rounded-full bg-gray-400 flex items-center justify-center ring-8 ring-white">
+                              <svg class="h-5 w-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                              </svg>
+                            </div>
+                          <% end %>
+                        </div>
+                        
+                        <!-- Activity Content -->
+                        <div class="min-w-0 flex-1">
+                          <div>
+                            <p class="text-sm text-gray-900">
+                              <%= activity.description %>
+                            </p>
+                            <div class="mt-2 text-sm text-gray-500">
+                              <time><%= time_ago_in_words(activity.performed_at) %> ago</time>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </li>
+                <% end %>
+              </ul>
+            </div>
+          <% else %>
+            <p class="text-gray-500 text-center py-4">No activities recorded</p>
+          <% end %>
+        </div>
+      </div>
+
+      <!-- Sidebar -->
+      <div class="space-y-6">
+        <!-- AI Analysis Section (Sidebar) - MOVED TO TOP -->
+        <% if @ticket.ai_analysis.present? %>
+          <% parsed_analysis = parse_ai_analysis(@ticket.ai_analysis) %>
+          
+          <div class="bg-gradient-to-r from-purple-50 to-indigo-50 rounded-lg shadow-sm border border-purple-200 p-6">
+            <div class="flex items-center justify-between mb-4">
+              <h3 class="text-lg font-semibold text-purple-900 flex items-center">
+                <% if @ticket.ai_analysis.in_progress? %>
+                  <svg class="w-5 h-5 text-yellow-500 mr-2 animate-pulse" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6l4 2"></path>
+                    <circle cx="12" cy="12" r="10"></circle>
+                  </svg>
+                <% elsif @ticket.ai_analysis.failed? %>
+                  <svg class="w-5 h-5 text-red-500 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                  </svg>
+                <% else %>
+                  <svg class="w-5 h-5 text-purple-600 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z"></path>
+                  </svg>
+                <% end %>
+                🤖 AI Analysis 
+                <% if @ticket.ai_analysis.analysis_status != 'completed' %>
+                  <span class="text-sm font-normal text-purple-600 ml-2">
+                    (<%= @ticket.ai_analysis.analysis_status.humanize %>)
+                  </span>
+                <% end %>
+              </h3>
+              
+              <%# Reset AI Analysis Button %>
+              <form action="<%= reset_analysis_ticket_path(@ticket) %>" method="post" style="display: inline;" onsubmit="return confirm('Are you sure you want to reset the AI analysis? This will permanently delete the current analysis.')">
+                <%= hidden_field_tag :authenticity_token, form_authenticity_token %>
+                <%= hidden_field_tag :_method, 'delete' %>
+                <button type="submit" class="inline-flex items-center px-2 py-1 bg-red-100 hover:bg-red-200 text-red-700 text-xs font-medium rounded transition-colors duration-200" title="Reset AI Analysis">
+                  <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path>
+                  </svg>
+                </button>
+              </form>
+            </div>
+            
+            <%# Job Status Information %>
+            <% if @ticket.ai_analysis.failed? && @ticket.ai_analysis.error_message.present? %>
+              <div class="mb-4 p-3 bg-red-50 border border-red-200 rounded-lg">
+                <div class="flex items-start">
+                  <svg class="w-4 h-4 text-red-500 mt-0.5 mr-2 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                  </svg>
+                  <div>
+                    <p class="text-sm font-medium text-red-800">Analysis Failed</p>
+                    <p class="text-sm text-red-700 mt-1"><%= @ticket.ai_analysis.error_message %></p>
+                    <p class="text-xs text-red-600 mt-1">
+                      Visit <a href="/admin/background_jobs" class="underline">Background Jobs</a> dashboard or use retry button above
+                    </p>
+                  </div>
+                </div>
+              </div>
+            <% elsif @ticket.ai_analysis.in_progress? %>
+              <div class="mb-4 p-3 bg-yellow-50 border border-yellow-200 rounded-lg">
+                <div class="flex items-start">
+                  <svg class="w-4 h-4 text-yellow-500 mt-0.5 mr-2 flex-shrink-0 animate-pulse" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6l4 2"></path>
+                    <circle cx="12" cy="12" r="10"></circle>
+                  </svg>
+                  <div>
+                    <p class="text-sm font-medium text-yellow-800">Analysis In Progress</p>
+                    <p class="text-sm text-yellow-700 mt-1">
+                      AI analysis is <%= @ticket.ai_analysis.analysis_status %>. Results will appear here when complete.
+                    </p>
+                    <p class="text-xs text-yellow-600 mt-1">
+                      Monitor progress at <a href="/admin/background_jobs" class="underline">Background Jobs</a> dashboard
+                    </p>
+                  </div>
+                </div>
+              </div>
+            <% end %>
+            
+            <%# Only show parsed analysis if completed %>
+            <% if @ticket.ai_analysis.completed? && parsed_analysis %>
+              
+              <%# Confidence Score %>
+              <% confidence_score = parsed_analysis[:confidence_score] || @ticket.ai_analysis.confidence_score %>
+              <% if confidence_score %>
+                <div class="mb-4">
+                  <div class="flex items-center justify-between text-sm mb-2">
+                    <span class="text-purple-700 font-medium">🎯 Confidence</span>
+                    <span class="text-purple-900 font-semibold"><%= (confidence_score * 100).round %>%</span>
+                  </div>
+                  <div class="bg-purple-100 rounded-full h-2 overflow-hidden">
+                    <div class="bg-purple-600 h-2 rounded-full transition-all duration-500 ease-out confidence-bar" 
+                         style="width: <%= (confidence_score * 100).round %>%"></div>
+                  </div>
+                  <% if confidence_score < 0.7 %>
+                    <p class="text-xs text-orange-600 mt-1">⚠️ Low confidence - review carefully</p>
+                  <% elsif confidence_score >= 0.9 %>
+                    <p class="text-xs text-green-600 mt-1">✨ High confidence</p>
+                  <% end %>
+                </div>
+              <% end %>
+              
+              <dl class="space-y-4">
+                <%# Summary %>
+                <% if parsed_analysis[:summary].present? %>
+                  <div>
+                    <dt class="text-sm font-medium text-purple-700 flex items-center mb-2">
+                      📋 Issue Summary
+                    </dt>
+                    <dd class="text-sm text-purple-800 bg-purple-50 rounded-lg p-3 border border-purple-100">
+                      <%= parsed_analysis[:summary] %>
+                    </dd>
+                  </div>
+                <% end %>
+                
+                <%# Quick Stats Row %>
+                <div class="grid grid-cols-2 gap-3">
+                  <%# Sentiment %>
+                  <% if parsed_analysis[:sentiment].present? %>
+                    <div>
+                      <dt class="text-xs font-medium text-purple-700 mb-1">Customer Mood</dt>
+                      <dd>
+                        <span class="inline-flex items-center px-2 py-1 text-xs font-medium rounded-full <%= sentiment_color_classes(parsed_analysis[:sentiment]) %>">
+                          <%= sentiment_emoji(parsed_analysis[:sentiment]) %>
+                          <%= parsed_analysis[:sentiment].humanize %>
+                        </span>
+                      </dd>
+                    </div>
+                  <% end %>
+                  
+                  <%# Priority Suggestion %>
+                  <% if parsed_analysis[:priority].present? %>
+                    <div>
+                      <dt class="text-xs font-medium text-purple-700 mb-1">Suggested Priority</dt>
+                      <dd>
+                        <span class="inline-flex items-center px-2 py-1 text-xs font-medium rounded-full <%= priority_color_classes(parsed_analysis[:priority]) %>">
+                          <% case parsed_analysis[:priority]&.downcase
+                             when 'urgent' %>⚠️
+                          <% when 'high' %>🔴
+                          <% when 'medium' %>🟡
+                          <% when 'low' %>🟢
+                          <% end %>
+                          <%= parsed_analysis[:priority].humanize %>
+                        </span>
+                      </dd>
+                    </div>
+                  <% end %>
+                </div>
+                
+                <%# Tags %>
+                <% tags_to_display = parsed_analysis[:tags].presence || @ticket.ai_analysis.tags %>
+                <% if tags_to_display.present? && tags_to_display.any? %>
+                  <div>
+                    <dt class="text-sm font-medium text-purple-700 mb-2">🏷️ AI Tags</dt>
+                    <dd class="flex flex-wrap gap-1">
+                      <% tags_to_display.first(8).each do |tag| %>
+                        <span class="inline-flex px-2 py-1 text-xs font-medium bg-indigo-50 text-indigo-700 border border-indigo-200 rounded">
+                          #<%= tag.to_s.strip.downcase.gsub(/[^a-z0-9]/, '') %>
+                        </span>
+                      <% end %>
+                      <% if tags_to_display.length > 8 %>
+                        <span class="inline-flex px-2 py-1 text-xs font-medium bg-gray-100 text-gray-600 rounded">
+                          +<%= tags_to_display.length - 8 %> more
+                        </span>
+                      <% end %>
+                    </dd>
+                  </div>
+                <% end %>
+                
+                <%# Suggested Actions (if available from parsing) %>
+                <% if parsed_analysis[:suggested_actions].present? && parsed_analysis[:suggested_actions].any? %>
+                  <div>
+                    <dt class="text-sm font-medium text-purple-700 mb-2">⚡ Quick Actions</dt>
+                    <dd class="space-y-1">
+                      <% parsed_analysis[:suggested_actions].first(3).each do |action| %>
+                        <div class="text-xs bg-blue-50 rounded px-2 py-1 border border-blue-100 text-blue-800">
+                          • <%= action.strip.truncate(60) %>
+                        </div>
+                      <% end %>
+                      <% if parsed_analysis[:suggested_actions].length > 3 %>
+                        <div class="text-xs text-purple-500">
+                          +<%= parsed_analysis[:suggested_actions].length - 3 %> more actions available
+                        </div>
+                      <% end %>
+                    </dd>
+                  </div>
+                <% end %>
+                
+                <%# Suggested Response Indicator %>
+                <% if @ticket.ai_analysis.suggested_response.present? %>
+                  <div class="pt-3 border-t border-purple-200">
+                    <dt class="text-sm font-medium text-purple-700 mb-2">📨 Response Status</dt>
+                    <dd class="space-y-2">
+                      <div class="flex items-center justify-between bg-green-50 rounded-lg p-2 border border-green-200">
+                        <div class="flex items-center space-x-2">
+                          <svg class="w-4 h-4 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                          </svg>
+                          <span class="text-sm text-green-700 font-medium">Customer Response Ready</span>
+                        </div>
+                      </div>
+                      <button 
+                        onclick="scrollToResponseBox()"
+                        class="w-full inline-flex items-center justify-center px-3 py-2 bg-purple-100 hover:bg-purple-200 text-purple-700 text-sm font-medium rounded-lg transition-colors duration-200"
+                      >
+                        <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 14l-7 7m0 0l-7-7m7 7V3"></path>
+                        </svg>
+                        Review & Send Response
+                      </button>
+                    </dd>
+                  </div>
+                <% end %>
+                
+                <%# Sources %>
+                <% if @ticket.ai_analysis.source_files.present? && @ticket.ai_analysis.source_files.any? %>
+                  <div class="pt-3 border-t border-purple-200">
+                    <dt class="text-sm font-medium text-purple-700 mb-2">📚 Knowledge Sources</dt>
+                    <dd class="space-y-1">
+                      <% @ticket.ai_analysis.source_files.first(3).each do |source| %>
+                        <div class="text-xs bg-purple-50 rounded px-2 py-1 border border-purple-100 text-purple-700 truncate" title="<%= source %>">
+                          📄 <%= truncate(source.to_s, length: 30) %>
+                        </div>
+                      <% end %>
+                      <% if @ticket.ai_analysis.source_files.length > 3 %>
+                        <div class="text-xs text-purple-500">
+                          +<%= @ticket.ai_analysis.source_files.length - 3 %> more sources
+                        </div>
+                      <% end %>
+                    </dd>
+                  </div>
+                <% end %>
+                
+                <%# Analysis timestamp %>
+                <% if @ticket.ai_analysis.processed_at.present? %>
+                  <div class="pt-3 border-t border-purple-200 text-xs text-purple-500 flex items-center">
+                    <svg class="w-3 h-3 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                    </svg>
+                    Analyzed <%= time_ago_in_words(@ticket.ai_analysis.processed_at) %> ago
+                  </div>
+                <% end %>
+                
+              </dl>
+            <% else %>
+              <%# Show status for non-completed analysis %>
+              <% if @ticket.ai_analysis.status_updated_at.present? %>
+                <div class="pt-3 border-t border-purple-200 text-xs text-purple-500">
+                  Status updated <%= time_ago_in_words(@ticket.ai_analysis.status_updated_at) %> ago
+                </div>
+              <% end %>
+            <% end %>
+          </div>
+        <% end %>
+
+        <!-- Customer Information - MOVED TO SECOND POSITION -->
+        <% if @ticket.customer_info.present? %>
+          <div class="bg-white rounded-lg shadow-sm border border-amber-200 p-6">
+            <h3 class="text-lg font-semibold text-gray-900 mb-4">Customer Information</h3>
+            
+            <dl class="space-y-3">
+              <div>
+                <dt class="text-sm font-medium text-gray-500">Name</dt>
+                <dd class="mt-1 text-sm text-gray-900"><%= @ticket.customer_info.customer_name %></dd>
+              </div>
+              
+              <% if @ticket.customer_info.email.present? %>
+                <div>
+                  <dt class="text-sm font-medium text-gray-500">Email</dt>
+                  <dd class="mt-1 text-sm text-gray-900">
+                    <a href="mailto:<%= @ticket.customer_info.email %>" class="text-amber-600 hover:text-amber-800">
+                      <%= @ticket.customer_info.email %>
+                    </a>
+                  </dd>
+                </div>
+              <% end %>
+              
+              <% if @ticket.customer_info.phone.present? %>
+                <div>
+                  <dt class="text-sm font-medium text-gray-500">Phone</dt>
+                  <dd class="mt-1 text-sm text-gray-900">
+                    <a href="tel:<%= @ticket.customer_info.phone %>" class="text-amber-600 hover:text-amber-800">
+                      <%= @ticket.customer_info.phone %>
+                    </a>
+                  </dd>
+                </div>
+              <% end %>
+              
+              <% if @ticket.customer_info.account_tier.present? %>
+                <div>
+                  <dt class="text-sm font-medium text-gray-500">Account Tier</dt>
+                  <dd class="mt-1 text-sm text-gray-900 capitalize"><%= @ticket.customer_info.account_tier %></dd>
+                </div>
+              <% end %>
+            </dl>
+          </div>
+        <% end %>
+
+        <!-- Ticket Details - MOVED TO THIRD POSITION -->
+        <div class="bg-white rounded-lg shadow-sm border border-amber-200 p-6">
+          <h3 class="text-lg font-semibold text-gray-900 mb-4">Ticket Details</h3>
+          
+          <dl class="space-y-4">
+            <div>
+              <dt class="text-sm font-medium text-gray-500">Status</dt>
+              <dd class="mt-1">
+                <% status_colors = {
+                     'new' => 'bg-blue-100 text-blue-800',
+                     'in_progress' => 'bg-yellow-100 text-yellow-800',
+                     'resolved' => 'bg-green-100 text-green-800',
+                     'closed' => 'bg-gray-100 text-gray-800'
+                   } %>
+                <span class="inline-flex px-3 py-1 text-sm font-semibold rounded-full <%= status_colors[@ticket.status] || 'bg-gray-100 text-gray-800' %>">
+                  <%= @ticket.status.humanize %>
+                </span>
+              </dd>
+            </div>
+            
+            <div>
+              <dt class="text-sm font-medium text-gray-500">Priority</dt>
+              <dd class="mt-1">
+                <% priority_colors = {
+                     'low' => 'bg-gray-100 text-gray-800',
+                     'medium' => 'bg-blue-100 text-blue-800',
+                     'high' => 'bg-orange-100 text-orange-800',
+                     'urgent' => 'bg-red-100 text-red-800'
+                   } %>
+                <span class="inline-flex px-3 py-1 text-sm font-semibold rounded-full <%= priority_colors[@ticket.priority] || 'bg-gray-100 text-gray-800' %>">
+                  <%= @ticket.priority.humanize %>
+                </span>
+              </dd>
+            </div>
+            
+            <div>
+              <dt class="text-sm font-medium text-gray-500">Channel</dt>
+              <dd class="mt-1 text-sm text-gray-900"><%= @ticket.channel&.humanize || 'Not specified' %></dd>
+            </div>
+            
+            <div>
+              <dt class="text-sm font-medium text-gray-500">Category</dt>
+              <dd class="mt-1 text-sm text-gray-900"><%= @ticket.issue_category&.humanize || 'Not specified' %></dd>
+            </div>
+            
+            <div>
+              <dt class="text-sm font-medium text-gray-500">Assigned Agent</dt>
+              <dd class="mt-1 text-sm text-gray-900"><%= @ticket.assigned_agent&.display_name || 'Unassigned' %></dd>
+            </div>
+          </dl>
+        </div>
+
+        <!-- MoodBrew Machine Information -->
+        <% if @ticket.machine_model.present? %>
+          <div class="bg-white rounded-lg shadow-sm border border-amber-200 p-6">
+            <h3 class="text-lg font-semibold text-gray-900 mb-4">☕ MoodBrew Machine</h3>
+            
+            <dl class="space-y-3">
+              <div>
+                <dt class="text-sm font-medium text-gray-500">Model</dt>
+                <dd class="mt-1 text-sm text-gray-900"><%= @ticket.machine_model %></dd>
+              </div>
+              
+              <% if @ticket.customer_info&.moodbrew_serial.present? %>
+                <div>
+                  <dt class="text-sm font-medium text-gray-500">Serial Number</dt>
+                  <dd class="mt-1 text-sm text-gray-900 font-mono"><%= @ticket.customer_info.moodbrew_serial %></dd>
+                </div>
+              <% end %>
+              
+              <% if @ticket.customer_info&.purchase_date.present? %>
+                <div>
+                  <dt class="text-sm font-medium text-gray-500">Purchase Date</dt>
+                  <dd class="mt-1 text-sm text-gray-900"><%= @ticket.customer_info.purchase_date.strftime("%B %d, %Y") %></dd>
+                </div>
+              <% end %>
+              
+              <% if @ticket.customer_info&.warranty_status.present? %>
+                <div>
+                  <dt class="text-sm font-medium text-gray-500">Warranty</dt>
+                  <dd class="mt-1">
+                    <span class="inline-flex px-2 py-1 text-xs font-medium rounded-full <%= @ticket.customer_info.warranty_status == 'active' ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800' %>">
+                      <%= @ticket.customer_info.warranty_status.humanize %>
+                    </span>
+                  </dd>
+                </div>
+              <% end %>
+              
+              <% if @ticket.customer_mood.present? %>
+                <div>
+                  <dt class="text-sm font-medium text-gray-500">Customer Mood</dt>
+                  <dd class="mt-1 text-sm text-gray-900 capitalize"><%= @ticket.customer_mood %></dd>
+                </div>
+              <% end %>
+            </dl>
+          </div>
+        <% end %>
+      </div>
+    </div>
+
+    <!-- Debug Console (Development/Debug Mode) -->
+    <% if Rails.env.development? || params[:debug] == 'true' %>
+      <div id="debug-console" class="mt-8 bg-gray-900 rounded-lg shadow-lg border border-gray-700 overflow-hidden">
+        <!-- Debug Console Header -->
+        <div class="bg-gray-800 px-6 py-3 flex items-center justify-between">
+          <div class="flex items-center space-x-3">
+            <svg class="w-5 h-5 text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 9l3 3-3 3m5 0h3M5 20h14a2 2 0 002-2V6a2 2 0 00-2-2H5a2 2 0 00-2 2v14a2 2 0 002 2z"></path>
+            </svg>
+            <h3 class="text-lg font-semibold text-white">🐛 Debug Console</h3>
+            <span class="inline-flex px-2 py-1 text-xs font-medium bg-green-100 text-green-800 rounded-full">
+              Ticket <%= @ticket.ticket_number %>
+            </span>
+          </div>
+          <button onclick="toggleDebugConsole()" class="text-gray-400 hover:text-white transition-colors duration-200">
+            <svg id="debug-toggle-icon" class="w-5 h-5 transform transition-transform duration-200" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
+            </svg>
+          </button>
+        </div>
+
+        <!-- Debug Console Content -->
+        <div id="debug-console-content" class="bg-gray-900">
+          <!-- Tab Navigation -->
+          <div class="border-b border-gray-700">
+            <nav class="flex space-x-8 px-6" aria-label="Debug Tabs">
+              <button onclick="switchDebugTab('rag')" 
+                      class="debug-tab py-3 px-1 border-b-2 border-transparent text-gray-400 hover:text-gray-300 hover:border-gray-300 font-medium text-sm transition-colors duration-200"
+                      data-tab="rag">
+                📊 RAG Response
+              </button>
+              <button onclick="switchDebugTab('progress')" 
+                      class="debug-tab py-3 px-1 border-b-2 border-transparent text-gray-400 hover:text-gray-300 hover:border-gray-300 font-medium text-sm transition-colors duration-200"
+                      data-tab="progress">
+                ⏱️ AI Progress
+              </button>
+              <button onclick="switchDebugTab('console')" 
+                      class="debug-tab py-3 px-1 border-b-2 border-transparent text-gray-400 hover:text-gray-300 hover:border-gray-300 font-medium text-sm transition-colors duration-200"
+                      data-tab="console">
+                📋 Console Logs
+              </button>
+              <button onclick="refreshDebugData()" 
+                      class="ml-auto py-3 px-3 bg-blue-600 hover:bg-blue-700 text-white text-sm font-medium rounded transition-colors duration-200">
+                🔄 Refresh
+              </button>
+            </nav>
+          </div>
+
+          <!-- Tab Content -->
+          <div class="p-6">
+            <!-- RAG Response Tab -->
+            <div id="rag-tab-content" class="debug-tab-content hidden">
+              <div class="space-y-4">
+                <div class="flex items-center justify-between">
+                  <h4 class="text-lg font-semibold text-white">RAG JSON Response</h4>
+                  <button onclick="copyDebugData('rag')" class="px-3 py-1 bg-gray-700 hover:bg-gray-600 text-gray-300 text-sm rounded transition-colors duration-200">
+                    📋 Copy JSON
+                  </button>
+                </div>
+                <div id="rag-response-content" class="bg-gray-800 rounded-lg p-4 text-sm overflow-auto max-h-96">
+                  <div class="text-gray-400 text-center py-8">
+                    <svg class="mx-auto h-8 w-8 text-gray-500 mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 13V6a2 2 0 00-2-2H6a2 2 0 00-2 2v7m16 0v5a2 2 0 01-2 2H6a2 2 0 01-2-2v-5m16 0h-2M4 13h2m13-8l-5 5-5-5"></path>
+                    </svg>
+                    <p>No RAG response data available yet. Run AI analysis to see detailed JSON response.</p>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- AI Progress Tab -->
+            <div id="progress-tab-content" class="debug-tab-content hidden">
+              <div class="space-y-4">
+                <div class="flex items-center justify-between">
+                  <h4 class="text-lg font-semibold text-white">AI Analysis Progress</h4>
+                  <div class="flex items-center space-x-2">
+                    <span id="progress-status" class="inline-flex px-2 py-1 text-xs font-medium bg-gray-700 text-gray-300 rounded-full">
+                      Idle
+                    </span>
+                    <button onclick="startProgressMonitoring()" class="px-3 py-1 bg-purple-600 hover:bg-purple-700 text-white text-sm rounded transition-colors duration-200">
+                      📊 Monitor
+                    </button>
+                  </div>
+                </div>
+                
+                <!-- Progress Timeline -->
+                <div id="progress-timeline" class="bg-gray-800 rounded-lg p-4">
+                  <div class="text-gray-400 text-center py-8">
+                    <svg class="mx-auto h-8 w-8 text-gray-500 mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                    </svg>
+                    <p>No active AI analysis. Start analysis to see real-time progress.</p>
+                  </div>
+                </div>
+
+                <!-- Performance Metrics -->
+                <div id="performance-metrics" class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                  <div class="bg-gray-800 rounded-lg p-4">
+                    <h5 class="text-sm font-medium text-gray-300 mb-2">Total Time</h5>
+                    <p id="total-time" class="text-xl font-bold text-white">--</p>
+                  </div>
+                  <div class="bg-gray-800 rounded-lg p-4">
+                    <h5 class="text-sm font-medium text-gray-300 mb-2">RAG Retrieval</h5>
+                    <p id="rag-time" class="text-xl font-bold text-blue-400">--</p>
+                  </div>
+                  <div class="bg-gray-800 rounded-lg p-4">
+                    <h5 class="text-sm font-medium text-gray-300 mb-2">Response Gen</h5>
+                    <p id="response-time" class="text-xl font-bold text-green-400">--</p>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Console Logs Tab -->
+            <div id="console-tab-content" class="debug-tab-content hidden">
+              <div class="space-y-4">
+                <div class="flex items-center justify-between">
+                  <h4 class="text-lg font-semibold text-white">Rails Console Logs</h4>
+                  <div class="flex items-center space-x-2">
+                    <button onclick="clearConsoleLogs()" class="px-3 py-1 bg-red-600 hover:bg-red-700 text-white text-sm rounded transition-colors duration-200">
+                      🗑️ Clear
+                    </button>
+                    <button onclick="toggleAutoScroll()" id="autoscroll-btn" class="px-3 py-1 bg-gray-700 hover:bg-gray-600 text-gray-300 text-sm rounded transition-colors duration-200">
+                      📜 Auto-scroll: ON
+                    </button>
+                  </div>
+                </div>
+                <div id="console-logs" class="bg-gray-800 rounded-lg p-4 text-sm overflow-auto max-h-96 font-mono">
+                  <div class="text-gray-400 text-center py-8">
+                    <svg class="mx-auto h-8 w-8 text-gray-500 mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+                    </svg>
+                    <p>Console logs will appear here when AI analysis is running.</p>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    <% end %>
+  </div>
+</div>
+
+<script>
+
+function copyToClipboard(text) {
+  if (navigator.clipboard && window.isSecureContext) {
+    // Modern async clipboard API
+    navigator.clipboard.writeText(text).then(() => {
+      showCopyFeedback();
+    }).catch(err => {
+      console.error('Failed to copy text: ', err);
+      fallbackCopyTextToClipboard(text);
+    });
+  } else {
+    // Fallback for older browsers or non-secure contexts
+    fallbackCopyTextToClipboard(text);
+  }
+}
+
+function fallbackCopyTextToClipboard(text) {
+  const textArea = document.createElement("textarea");
+  textArea.value = text;
+  
+  // Avoid scrolling to bottom
+  textArea.style.top = "0";
+  textArea.style.left = "0";
+  textArea.style.position = "fixed";
+  
+  document.body.appendChild(textArea);
+  textArea.focus();
+  textArea.select();
+  
+  try {
+    const successful = document.execCommand('copy');
+    if (successful) {
+      showCopyFeedback();
+    } else {
+      console.error('Fallback: Copying text command was unsuccessful');
+    }
+  } catch (err) {
+    console.error('Fallback: Oops, unable to copy', err);
+  }
+  
+  document.body.removeChild(textArea);
+}
+
+function showCopyFeedback() {
+  // Find the copy button and temporarily change its text
+  const copyButton = event.target.closest('button');
+  if (copyButton) {
+    const originalText = copyButton.innerHTML;
+    copyButton.innerHTML = `
+      <svg class="w-3 h-3 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+      </svg>
+      Copied!
+    `;
+    copyButton.classList.add('bg-green-100', 'text-green-700');
+    copyButton.classList.remove('bg-purple-100', 'text-purple-700', 'hover:bg-purple-200');
+    
+    setTimeout(() => {
+      copyButton.innerHTML = originalText;
+      copyButton.classList.remove('bg-green-100', 'text-green-700');
+      copyButton.classList.add('bg-purple-100', 'text-purple-700', 'hover:bg-purple-200');
+    }, 2000);
+  }
+}
+
+// AI Response Box Functions
+function toggleResponseBox() {
+  const responseBox = document.getElementById('ai-response-box');
+  if (responseBox) {
+    responseBox.style.display = responseBox.style.display === 'none' ? 'block' : 'none';
+  }
+}
+
+function confirmSendResponse() {
+  return confirm('Send this response? This will log it as an agent message (internal only - not sent to customer).');
+}
+
+function copyResponseToClipboard() {
+  const textarea = document.getElementById('response-textarea');
+  if (textarea && navigator.clipboard) {
+    navigator.clipboard.writeText(textarea.value).then(() => {
+      // Show success feedback
+      const btn = event.target.closest('button');
+      const originalHTML = btn.innerHTML;
+      btn.innerHTML = `
+        <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+        </svg>
+        Copied!
+      `;
+      btn.classList.remove('bg-gray-100', 'hover:bg-gray-200');
+      btn.classList.add('bg-green-100', 'text-green-700');
+      
+      setTimeout(() => {
+        btn.innerHTML = originalHTML;
+        btn.classList.remove('bg-green-100', 'text-green-700');
+        btn.classList.add('bg-gray-100', 'hover:bg-gray-200');
+      }, 2000);
+    });
+  }
+}
+
+function clearResponse() {
+  const textarea = document.getElementById('response-textarea');
+  if (textarea) {
+    textarea.value = '';
+    updateCharCounter();
+  }
+}
+
+function scrollToResponseBox() {
+  const responseBox = document.getElementById('ai-response-box');
+  if (responseBox) {
+    responseBox.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    // Highlight the box briefly
+    responseBox.classList.add('ring-4', 'ring-purple-400', 'ring-opacity-50');
+    setTimeout(() => {
+      responseBox.classList.remove('ring-4', 'ring-purple-400', 'ring-opacity-50');
+    }, 2000);
+  }
+}
+
+function updateCharCounter() {
+  const textarea = document.getElementById('response-textarea');
+  const counter = document.getElementById('char-counter');
+  if (textarea && counter) {
+    counter.textContent = `${textarea.value.length} characters`;
+  }
+}
+
+// Auto-resize textarea based on content
+function autoResizeTextarea() {
+  const textarea = document.getElementById('response-textarea');
+  if (textarea) {
+    textarea.style.height = 'auto';
+    textarea.style.height = Math.min(textarea.scrollHeight, 400) + 'px';
+  }
+}
+
+// Initialize response box event listeners
+document.addEventListener('DOMContentLoaded', function() {
+  const textarea = document.getElementById('response-textarea');
+  if (textarea) {
+    // Update character counter on input
+    textarea.addEventListener('input', function() {
+      updateCharCounter();
+      autoResizeTextarea();
+    });
+    
+    // Initialize counter and size
+    updateCharCounter();
+    autoResizeTextarea();
+  }
+});
+
+// Debug Console Functions
+let debugConsoleCollapsed = false;
+let autoScrollEnabled = true;
+let currentDebugTab = 'rag';
+
+function toggleDebugConsole() {
+  const content = document.getElementById('debug-console-content');
+  const icon = document.getElementById('debug-toggle-icon');
+  
+  if (debugConsoleCollapsed) {
+    content.classList.remove('hidden');
+    icon.classList.remove('rotate-180');
+    debugConsoleCollapsed = false;
+  } else {
+    content.classList.add('hidden');
+    icon.classList.add('rotate-180');
+    debugConsoleCollapsed = true;
+  }
+}
+
+function switchDebugTab(tabName) {
+  // Hide all tab contents
+  document.querySelectorAll('.debug-tab-content').forEach(content => {
+    content.classList.add('hidden');
+  });
+  
+  // Remove active state from all tabs
+  document.querySelectorAll('.debug-tab').forEach(tab => {
+    tab.classList.remove('border-blue-500', 'text-blue-600');
+    tab.classList.add('border-transparent', 'text-gray-400');
+  });
+  
+  // Show selected tab content
+  const tabContent = document.getElementById(`${tabName}-tab-content`);
+  if (tabContent) {
+    tabContent.classList.remove('hidden');
+  }
+  
+  // Activate selected tab
+  const activeTab = document.querySelector(`[data-tab="${tabName}"]`);
+  if (activeTab) {
+    activeTab.classList.remove('border-transparent', 'text-gray-400');
+    activeTab.classList.add('border-blue-500', 'text-blue-600');
+  }
+  
+  currentDebugTab = tabName;
+  
+  // Load tab-specific data
+  loadDebugTabData(tabName);
+}
+
+function loadDebugTabData(tabName) {
+  switch (tabName) {
+    case 'rag':
+      loadRagResponseData();
+      break;
+    case 'progress':
+      loadProgressData();
+      break;
+    case 'console':
+      loadConsoleLogs();
+      break;
+  }
+}
+
+function loadRagResponseData() {
+  const ticketId = '<%= @ticket.id %>';
+  const content = document.getElementById('rag-response-content');
+  
+  fetch(`/tickets/${ticketId}/debug_rag`)
+    .then(response => response.json())
+    .then(data => {
+      if (data.raw_response) {
+        content.innerHTML = `<pre class="text-green-400 whitespace-pre-wrap overflow-auto">${JSON.stringify(data.raw_response, null, 2)}</pre>`;
+      } else {
+        content.innerHTML = `
+          <div class="text-gray-400 text-center py-8">
+            <p>No RAG response data found for this ticket.</p>
+            <p class="text-sm mt-2">Run AI analysis to capture the raw JSON response.</p>
+          </div>
+        `;
+      }
+    })
+    .catch(error => {
+      console.error('Error loading RAG data:', error);
+      content.innerHTML = `
+        <div class="text-red-400 text-center py-8">
+          <svg class="mx-auto h-8 w-8 text-red-500 mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+          </svg>
+          <p>Error loading RAG response data</p>
+          <p class="text-sm mt-2">${error.message}</p>
+          <p class="text-xs mt-2 text-gray-400">Try running AI analysis first, then refresh the debug console.</p>
+        </div>
+      `;
+    });
+}
+
+function loadProgressData() {
+  const content = document.getElementById('progress-timeline');
+  const ticketId = '<%= @ticket.id %>';
+  
+  fetch(`/tickets/${ticketId}/debug_progress`)
+    .then(response => response.json())
+    .then(data => {
+      if (data.steps && data.steps.length > 0) {
+        displayProgressTimeline(data);
+        updatePerformanceMetrics(data);
+      } else {
+        content.innerHTML = `
+          <div class="text-gray-400 text-center py-8">
+            <p>No progress data available for this ticket.</p>
+            <p class="text-sm mt-2">Progress will be tracked during the next AI analysis.</p>
+          </div>
+        `;
+      }
+    })
+    .catch(error => {
+      console.error('Error loading progress data:', error);
+      content.innerHTML = `
+        <div class="text-red-400 text-center py-8">
+          <p>Error loading progress data</p>
+          <p class="text-sm mt-2">${error.message}</p>
+        </div>
+      `;
+    });
+}
+
+function displayProgressTimeline(data) {
+  const timeline = document.getElementById('progress-timeline');
+  let timelineHTML = '<div class="space-y-3">';
+  
+  data.steps.forEach((step, index) => {
+    const isCompleted = step.status === 'completed';
+    const isError = step.status === 'error';
+    const duration = step.duration_ms ? `${step.duration_ms}ms` : '';
+    
+    timelineHTML += `
+      <div class="flex items-center space-x-3 p-3 rounded ${isCompleted ? 'bg-green-900/20' : isError ? 'bg-red-900/20' : 'bg-yellow-900/20'}">
+        <div class="flex-shrink-0">
+          ${isCompleted ? 
+            '<div class="w-6 h-6 bg-green-500 rounded-full flex items-center justify-center"><svg class="w-3 h-3 text-white" fill="currentColor" viewBox="0 0 20 20"><path d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"/></svg></div>' :
+            isError ? 
+            '<div class="w-6 h-6 bg-red-500 rounded-full flex items-center justify-center"><svg class="w-3 h-3 text-white" fill="currentColor" viewBox="0 0 20 20"><path d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z"/></svg></div>' :
+            '<div class="w-6 h-6 bg-yellow-500 rounded-full animate-pulse"></div>'
+          }
+        </div>
+        <div class="flex-1 min-w-0">
+          <p class="text-sm font-medium ${isCompleted ? 'text-green-400' : isError ? 'text-red-400' : 'text-yellow-400'}">${step.name}</p>
+          <p class="text-xs text-gray-400">${step.description || ''}</p>
+          ${step.error ? `<p class="text-xs text-red-300 mt-1">Error: ${step.error}</p>` : ''}
+        </div>
+        <div class="text-xs text-gray-500">${duration}</div>
+      </div>
+    `;
+  });
+  
+  timelineHTML += '</div>';
+  timeline.innerHTML = timelineHTML;
+}
+
+function updatePerformanceMetrics(data) {
+  const totalTime = data.total_duration_ms || 0;
+  const ragTime = data.steps.find(s => s.name === 'RAG Retrieval')?.duration_ms || 0;
+  const responseTime = data.steps.find(s => s.name === 'Response Generation')?.duration_ms || 0;
+  
+  document.getElementById('total-time').textContent = totalTime > 0 ? `${totalTime}ms` : '--';
+  document.getElementById('rag-time').textContent = ragTime > 0 ? `${ragTime}ms` : '--';
+  document.getElementById('response-time').textContent = responseTime > 0 ? `${responseTime}ms` : '--';
+}
+
+function loadConsoleLogs() {
+  const content = document.getElementById('console-logs');
+  const ticketId = '<%= @ticket.id %>';
+  
+  fetch(`/tickets/${ticketId}/debug_logs`)
+    .then(response => response.json())
+    .then(data => {
+      if (data.logs && data.logs.length > 0) {
+        displayConsoleLogs(data.logs);
+      } else {
+        content.innerHTML = `
+          <div class="text-gray-400 text-center py-8">
+            <p>No console logs captured yet.</p>
+            <p class="text-sm mt-2">Logs will appear here during AI analysis operations.</p>
+          </div>
+        `;
+      }
+    })
+    .catch(error => {
+      console.error('Error loading console logs:', error);
+      content.innerHTML = `
+        <div class="text-red-400 text-center py-8">
+          <p>Error loading console logs</p>
+          <p class="text-sm mt-2">${error.message}</p>
+        </div>
+      `;
+    });
+}
+
+function displayConsoleLogs(logs) {
+  const content = document.getElementById('console-logs');
+  let logsHTML = '';
+  
+  logs.forEach(log => {
+    const timestamp = new Date(log.timestamp).toLocaleTimeString();
+    const levelClass = {
+      'INFO': 'text-blue-400',
+      'WARN': 'text-yellow-400',
+      'ERROR': 'text-red-400',
+      'DEBUG': 'text-gray-400'
+    }[log.level] || 'text-gray-300';
+    
+    logsHTML += `
+      <div class="text-xs mb-1">
+        <span class="text-gray-500">[${timestamp}]</span>
+        <span class="${levelClass}">[${log.level}]</span>
+        <span class="text-gray-300">${log.message}</span>
+      </div>
+    `;
+  });
+  
+  content.innerHTML = logsHTML;
+  
+  if (autoScrollEnabled) {
+    content.scrollTop = content.scrollHeight;
+  }
+}
+
+function refreshDebugData() {
+  loadDebugTabData(currentDebugTab);
+}
+
+function copyDebugData(type) {
+  let textToCopy = '';
+  
+  if (type === 'rag') {
+    const content = document.getElementById('rag-response-content');
+    const pre = content.querySelector('pre');
+    if (pre) {
+      textToCopy = pre.textContent;
+    }
+  }
+  
+  if (textToCopy && navigator.clipboard) {
+    navigator.clipboard.writeText(textToCopy).then(() => {
+      // Show success feedback
+      const btn = event.target;
+      const originalText = btn.textContent;
+      btn.textContent = '✅ Copied!';
+      setTimeout(() => {
+        btn.textContent = originalText;
+      }, 2000);
+    });
+  }
+}
+
+function clearConsoleLogs() {
+  const content = document.getElementById('console-logs');
+  content.innerHTML = `
+    <div class="text-gray-400 text-center py-4">
+      <p>Console logs cleared.</p>
+    </div>
+  `;
+}
+
+function toggleAutoScroll() {
+  autoScrollEnabled = !autoScrollEnabled;
+  const btn = document.getElementById('autoscroll-btn');
+  btn.textContent = `📜 Auto-scroll: ${autoScrollEnabled ? 'ON' : 'OFF'}`;
+  btn.classList.toggle('bg-green-700', autoScrollEnabled);
+  btn.classList.toggle('bg-gray-700', !autoScrollEnabled);
+}
+
+function startProgressMonitoring() {
+  // This would connect to real-time updates during AI analysis
+  const status = document.getElementById('progress-status');
+  status.textContent = 'Monitoring...';
+  status.classList.remove('bg-gray-700');
+  status.classList.add('bg-blue-700');
+  
+  // Refresh progress data every 2 seconds when monitoring
+  const monitorInterval = setInterval(() => {
+    if (currentDebugTab === 'progress') {
+      loadProgressData();
+    } else {
+      clearInterval(monitorInterval);
+      status.textContent = 'Idle';
+      status.classList.remove('bg-blue-700');
+      status.classList.add('bg-gray-700');
+    }
+  }, 2000);
+}
+
+// Initialize debug console on page load
+document.addEventListener('DOMContentLoaded', function() {
+  // Auto-open RAG tab and start collapsed
+  switchDebugTab('rag');
+  toggleDebugConsole(); // Start collapsed
+});
+</script>
+
+<style>
+/* Smooth animations for collapsible sections */
+details summary {
+  transition: color 0.2s ease;
+}
+
+details summary::-webkit-details-marker {
+  display: none;
+}
+
+details summary::before {
+  content: '▶';
+  display: inline-block;
+  margin-right: 0.5rem;
+  transition: transform 0.2s ease;
+}
+
+details[open] summary::before {
+  transform: rotate(90deg);
+}
+
+details[open] summary ~ * {
+  animation: slideDown 0.2s ease-out;
+}
+
+@keyframes slideDown {
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Progress bar animation */
+.confidence-bar {
+  animation: fillProgress 0.5s ease-out;
+}
+
+@keyframes fillProgress {
+  from {
+    width: 0;
+  }
+}
+
+/* Sidebar card hover effects */
+.sidebar-card {
+  transition: box-shadow 0.2s ease, transform 0.2s ease;
+}
+
+.sidebar-card:hover {
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+  transform: translateY(-1px);
+}
+</style>

@@ -1,0 +1,64 @@
+@import "tailwindcss";
+
+/* MOODBREW THEME: Custom Coffee Colors */
+:root {
+  /* Coffee color palette */
+  --color-coffee-50: #fdf6f0;
+  --color-coffee-100: #f7e6d3;
+  --color-coffee-200: #efc49a;
+  --color-coffee-300: #e4a462;
+  --color-coffee-400: #d2b48c;  /* tan/beige */
+  --color-coffee-500: #cd853f;  /* peru/coffee */
+  --color-coffee-600: #8b4513;  /* coffee brown (primary) */
+  --color-coffee-700: #7a3f11;  /* dark coffee */
+  --color-coffee-800: #6b370f;  /* very dark coffee */
+  --color-coffee-900: #5c300d;  /* darkest coffee */
+  
+  /* Brand color shortcuts */
+  --color-brand-primary: #8B4513;
+  --color-brand-secondary: #D2B48C;
+  --color-brand-accent: #CD853F;
+}
+
+/* Generate coffee color utilities */
+@layer utilities {
+  /* Text colors */
+  .text-coffee-50 { color: var(--color-coffee-50); }
+  .text-coffee-100 { color: var(--color-coffee-100); }
+  .text-coffee-200 { color: var(--color-coffee-200); }
+  .text-coffee-300 { color: var(--color-coffee-300); }
+  .text-coffee-400 { color: var(--color-coffee-400); }
+  .text-coffee-500 { color: var(--color-coffee-500); }
+  .text-coffee-600 { color: var(--color-coffee-600); }
+  .text-coffee-700 { color: var(--color-coffee-700); }
+  .text-coffee-800 { color: var(--color-coffee-800); }
+  .text-coffee-900 { color: var(--color-coffee-900); }
+  
+  /* Background colors */
+  .bg-coffee-50 { background-color: var(--color-coffee-50); }
+  .bg-coffee-100 { background-color: var(--color-coffee-100); }
+  .bg-coffee-200 { background-color: var(--color-coffee-200); }
+  .bg-coffee-300 { background-color: var(--color-coffee-300); }
+  .bg-coffee-400 { background-color: var(--color-coffee-400); }
+  .bg-coffee-500 { background-color: var(--color-coffee-500); }
+  .bg-coffee-600 { background-color: var(--color-coffee-600); }
+  .bg-coffee-700 { background-color: var(--color-coffee-700); }
+  .bg-coffee-800 { background-color: var(--color-coffee-800); }
+  .bg-coffee-900 { background-color: var(--color-coffee-900); }
+  
+  /* Hover text colors */
+  .hover\:text-coffee-400:hover { color: var(--color-coffee-400); }
+  .hover\:text-coffee-500:hover { color: var(--color-coffee-500); }
+  .hover\:bg-coffee-700:hover { background-color: var(--color-coffee-700); }
+  
+  /* Focus ring colors */
+  .focus\:ring-coffee-500:focus {
+    --tw-ring-color: var(--color-coffee-500);
+    box-shadow: var(--tw-inset-shadow), var(--tw-inset-ring-shadow), var(--tw-ring-offset-shadow), var(--tw-ring-shadow), var(--tw-shadow);
+  }
+  
+  /* Coffee shadows */
+  .shadow-coffee {
+    box-shadow: 0 4px 14px 0 rgba(139, 69, 19, 0.25);
+  }
+}

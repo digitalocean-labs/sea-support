@@ -1,0 +1,342 @@
+<%# app/views/admin/background_jobs/show.html.erb %>
+<%# Detailed view for individual background job analysis %>
+
+<div class="min-h-screen bg-gray-50 py-8">
+  <div class="mx-auto max-w-6xl px-4 sm:px-6 lg:px-8">
+    
+    <!-- Header Section -->
+    <div class="mb-8">
+      <div class="flex items-center justify-between">
+        <div>
+          <h1 class="text-3xl font-bold text-gray-900">Background Job Details</h1>
+          <p class="mt-2 text-sm text-gray-600">
+            Job ID: <span class="font-mono text-gray-900"><%= @background_job.id %></span>
+          </p>
+        </div>
+        <div class="flex space-x-3">
+          <%= link_to "← Back to Jobs", admin_background_jobs_path, 
+              class: "inline-flex items-center px-4 py-2 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50" %>
+          <% if @background_job.ticket %>
+            <%= link_to "View Ticket", ticket_path(@background_job.ticket), 
+                class: "inline-flex items-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700" %>
+          <% end %>
+        </div>
+      </div>
+    </div>
+
+    <!-- Status Overview Card -->
+    <div class="mb-8 bg-white overflow-hidden shadow rounded-lg">
+      <div class="px-6 py-4 border-b border-gray-200">
+        <h2 class="text-lg font-medium text-gray-900">Job Status</h2>
+      </div>
+      <div class="p-6">
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+          <div>
+            <dt class="text-sm font-medium text-gray-500">Status</dt>
+            <dd class="mt-1">
+              <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium
+                <%= case @background_job.status
+                    when 'completed' then 'bg-green-100 text-green-800'
+                    when 'processing' then 'bg-blue-100 text-blue-800'
+                    when 'failed' then 'bg-red-100 text-red-800'
+                    when 'retrying' then 'bg-yellow-100 text-yellow-800'
+                    else 'bg-gray-100 text-gray-800'
+                    end %>">
+                <%= @background_job.status.humanize %>
+              </span>
+            </dd>
+          </div>
+          <div>
+            <dt class="text-sm font-medium text-gray-500">Job Type</dt>
+            <dd class="mt-1 text-sm text-gray-900"><%= @background_job.job_type.humanize %></dd>
+          </div>
+          <div>
+            <dt class="text-sm font-medium text-gray-500">AI Endpoint</dt>
+            <dd class="mt-1 text-sm text-gray-900"><%= @background_job.ai_endpoint || 'Not specified' %></dd>
+          </div>
+          <div>
+            <dt class="text-sm font-medium text-gray-500">Created</dt>
+            <dd class="mt-1 text-sm text-gray-900"><%= @background_job.created_at.strftime("%B %d, %Y at %I:%M %p") %></dd>
+          </div>
+          <div>
+            <dt class="text-sm font-medium text-gray-500">Duration</dt>
+            <dd class="mt-1 text-sm text-gray-900">
+              <%= @background_job.total_duration_seconds ? "#{@background_job.total_duration_seconds}s" : 'N/A' %>
+            </dd>
+          </div>
+          <div>
+            <dt class="text-sm font-medium text-gray-500">Confidence Score</dt>
+            <dd class="mt-1 text-sm text-gray-900">
+              <% if @background_job.confidence_score %>
+                <span class="<%= @background_job.high_confidence? ? 'text-green-600 font-semibold' : 'text-gray-900' %>">
+                  <%= (@background_job.confidence_score * 100).round(1) %>%
+                </span>
+              <% else %>
+                N/A
+              <% end %>
+            </dd>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Error Information (if failed) -->
+    <% if @background_job.failed? && @background_job.error_message %>
+      <div class="mb-8 bg-white overflow-hidden shadow rounded-lg">
+        <div class="px-6 py-4 border-b border-gray-200">
+          <h2 class="text-lg font-medium text-red-600">Error Details</h2>
+        </div>
+        <div class="p-6">
+          <div class="space-y-4">
+            <div>
+              <dt class="text-sm font-medium text-gray-500">Error Type</dt>
+              <dd class="mt-1 text-sm font-mono text-red-600"><%= @background_job.error_class %></dd>
+            </div>
+            <div>
+              <dt class="text-sm font-medium text-gray-500">Error Message</dt>
+              <dd class="mt-1 text-sm text-gray-900 bg-gray-50 p-3 rounded"><%= @background_job.error_message %></dd>
+            </div>
+            <div>
+              <dt class="text-sm font-medium text-gray-500">Retry Count</dt>
+              <dd class="mt-1 text-sm text-gray-900"><%= @background_job.retry_count %> / <%= @background_job.max_retries %></dd>
+            </div>
+          </div>
+        </div>
+      </div>
+    <% end %>
+
+    <!-- Analysis Results (if completed successfully) -->
+    <% if @background_job.completed? %>
+      <div class="mb-8 bg-white overflow-hidden shadow rounded-lg">
+        <div class="px-6 py-4 border-b border-gray-200">
+          <h2 class="text-lg font-medium text-gray-900">Analysis Results</h2>
+        </div>
+        <div class="p-6">
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div>
+              <dt class="text-sm font-medium text-gray-500">Priority Suggestion</dt>
+              <dd class="mt-1 text-sm text-gray-900"><%= @background_job.suggested_priority || 'None' %></dd>
+            </div>
+            <div>
+              <dt class="text-sm font-medium text-gray-500">Sentiment</dt>
+              <dd class="mt-1 text-sm text-gray-900"><%= @background_job.sentiment_detected || 'Not analyzed' %></dd>
+            </div>
+            <% if @background_job.tags_generated.present? %>
+              <div class="md:col-span-2">
+                <dt class="text-sm font-medium text-gray-500">Generated Tags</dt>
+                <dd class="mt-1">
+                  <div class="flex flex-wrap gap-2">
+                    <% @background_job.tags_generated.each do |tag| %>
+                      <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
+                        <%= tag %>
+                      </span>
+                    <% end %>
+                  </div>
+                </dd>
+              </div>
+            <% end %>
+            <div class="md:col-span-2">
+              <dt class="text-sm font-medium text-gray-500">Has Suggested Response</dt>
+              <dd class="mt-1 text-sm text-gray-900">
+                <span class="<%= @background_job.has_suggested_response ? 'text-green-600' : 'text-gray-500' %>">
+                  <%= @background_job.has_suggested_response ? 'Yes' : 'No' %>
+                </span>
+              </dd>
+            </div>
+          </div>
+        </div>
+      </div>
+    <% end %>
+
+    <!-- Performance Metrics -->
+    <% if @background_job.completed? && @background_job.total_duration_ms %>
+      <div class="mb-8 bg-white overflow-hidden shadow rounded-lg">
+        <div class="px-6 py-4 border-b border-gray-200">
+          <h2 class="text-lg font-medium text-gray-900">Performance Metrics</h2>
+        </div>
+        <div class="p-6">
+          <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+            <div>
+              <dt class="text-sm font-medium text-gray-500">Total Duration</dt>
+              <dd class="mt-1 text-2xl font-semibold text-gray-900"><%= @background_job.total_duration_seconds %>s</dd>
+            </div>
+            <% if @background_job.ai_call_duration_ms %>
+              <div>
+                <dt class="text-sm font-medium text-gray-500">AI Call Duration</dt>
+                <dd class="mt-1 text-2xl font-semibold text-blue-600"><%= @background_job.ai_call_duration_seconds %>s</dd>
+              </div>
+            <% end %>
+          </div>
+        </div>
+      </div>
+    <% end %>
+
+    <!-- RAG Retrieval Data -->
+    <% if @background_job.has_retrieval_data? %>
+      <div class="mb-8 bg-white overflow-hidden shadow rounded-lg">
+        <div class="px-6 py-4 border-b border-gray-200">
+          <h2 class="text-lg font-medium text-gray-900">Knowledge Sources Used</h2>
+          <p class="text-sm text-gray-500">Documents retrieved for context generation</p>
+        </div>
+        <div class="p-6">
+          <div class="mb-4">
+            <p class="text-sm text-gray-600">
+              <strong><%= @background_job.rag_retrieval_data.length %></strong> documents retrieved from: 
+              <strong><%= @background_job.retrieval_sources_summary %></strong>
+            </p>
+          </div>
+          <div class="overflow-x-auto">
+            <table class="min-w-full divide-y divide-gray-200">
+              <thead class="bg-gray-50">
+                <tr>
+                  <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Source</th>
+                  <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Score</th>
+                  <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Content Preview</th>
+                </tr>
+              </thead>
+              <tbody class="bg-white divide-y divide-gray-200">
+                <% @background_job.rag_retrieval_data.each do |item| %>
+                  <tr>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
+                      <%= item['filename'] || 'Unknown' %>
+                    </td>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                      <% if item['score'] %>
+                        <span class="inline-flex items-center px-2 py-1 rounded text-xs font-medium 
+                          <%= item['score'] > 0.8 ? 'bg-green-100 text-green-800' : item['score'] > 0.6 ? 'bg-yellow-100 text-yellow-800' : 'bg-gray-100 text-gray-800' %>">
+                          <%= (item['score'] * 100).round(1) %>%
+                        </span>
+                      <% else %>
+                        N/A
+                      <% end %>
+                    </td>
+                    <td class="px-6 py-4 text-sm text-gray-500 max-w-md">
+                      <div class="truncate">
+                        <%= item['content']&.truncate(100) || 'No preview available' %>
+                      </div>
+                    </td>
+                  </tr>
+                <% end %>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    <% end %>
+
+    <!-- Processing Steps -->
+    <% if @background_job.processing_steps.present? %>
+      <div class="mb-8 bg-white overflow-hidden shadow rounded-lg">
+        <div class="px-6 py-4 border-b border-gray-200">
+          <h2 class="text-lg font-medium text-gray-900">Processing Timeline</h2>
+          <p class="text-sm text-gray-500">Step-by-step execution details</p>
+        </div>
+        <div class="p-6">
+          <div class="flow-root">
+            <ul class="-mb-8">
+              <% @background_job.processing_steps.each_with_index do |step, index| %>
+                <li>
+                  <div class="relative pb-8">
+                    <% unless index == @background_job.processing_steps.length - 1 %>
+                      <span class="absolute top-4 left-4 -ml-px h-full w-0.5 bg-gray-200" aria-hidden="true"></span>
+                    <% end %>
+                    <div class="relative flex space-x-3">
+                      <div>
+                        <span class="h-8 w-8 rounded-full flex items-center justify-center ring-8 ring-white
+                          <%= case step['status']
+                              when 'completed' then 'bg-green-500'
+                              when 'in_progress' then 'bg-blue-500'
+                              when 'failed' then 'bg-red-500'
+                              else 'bg-gray-400'
+                              end %>">
+                          <% case step['status'] %>
+                          <% when 'completed' %>
+                            <svg class="w-5 h-5 text-white" fill="currentColor" viewBox="0 0 20 20">
+                              <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"></path>
+                            </svg>
+                          <% when 'failed' %>
+                            <svg class="w-5 h-5 text-white" fill="currentColor" viewBox="0 0 20 20">
+                              <path fill-rule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clip-rule="evenodd"></path>
+                            </svg>
+                          <% else %>
+                            <div class="h-2.5 w-2.5 rounded-full bg-current"></div>
+                          <% end %>
+                        </span>
+                      </div>
+                      <div class="min-w-0 flex-1 pt-1.5 flex justify-between space-x-4">
+                        <div>
+                          <p class="text-sm font-medium text-gray-900"><%= step['name']&.humanize %></p>
+                          <p class="text-sm text-gray-500"><%= step['description'] %></p>
+                          <% if step['duration_ms'] %>
+                            <p class="text-xs text-gray-400">Duration: <%= (step['duration_ms'] / 1000.0).round(2) %>s</p>
+                          <% end %>
+                        </div>
+                        <div class="text-right text-sm whitespace-nowrap text-gray-500">
+                          <% if step['timestamp'] %>
+                            <time><%= Time.parse(step['timestamp']).strftime("%I:%M:%S %p") rescue step['timestamp'] %></time>
+                          <% end %>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </li>
+              <% end %>
+            </ul>
+          </div>
+        </div>
+      </div>
+    <% end %>
+
+    <!-- Raw Data Section (Expandable) -->
+    <div class="bg-white overflow-hidden shadow rounded-lg">
+      <div class="px-6 py-4 border-b border-gray-200">
+        <h2 class="text-lg font-medium text-gray-900">Raw Data</h2>
+        <p class="text-sm text-gray-500">Complete request and response data for debugging</p>
+      </div>
+      <div class="p-6">
+        <!-- Request Data -->
+        <% if @background_job.request_json.present? %>
+          <details class="mb-6">
+            <summary class="cursor-pointer text-sm font-medium text-gray-700 hover:text-gray-900">
+              Request Data (<%= @background_job.request_json.keys.length %> fields)
+            </summary>
+            <div class="mt-4 bg-gray-50 rounded p-4">
+              <pre class="text-xs text-gray-800 whitespace-pre-wrap overflow-x-auto"><%= JSON.pretty_generate(@background_job.request_json) %></pre>
+            </div>
+          </details>
+        <% end %>
+
+        <!-- Response Data -->
+        <% if @background_job.response_json.present? %>
+          <details class="mb-6">
+            <summary class="cursor-pointer text-sm font-medium text-gray-700 hover:text-gray-900">
+              Response Data (<%= @background_job.response_json.keys.length %> fields)
+            </summary>
+            <div class="mt-4 bg-gray-50 rounded p-4">
+              <pre class="text-xs text-gray-800 whitespace-pre-wrap overflow-x-auto"><%= JSON.pretty_generate(@background_job.response_json) %></pre>
+            </div>
+          </details>
+        <% end %>
+
+        <!-- Console Logs -->
+        <% if @background_job.console_logs.present? %>
+          <details>
+            <summary class="cursor-pointer text-sm font-medium text-gray-700 hover:text-gray-900">
+              Console Logs (<%= @background_job.console_logs.length %> entries)
+            </summary>
+            <div class="mt-4 bg-gray-900 rounded p-4 max-h-96 overflow-y-auto">
+              <% @background_job.console_logs.each do |log| %>
+                <div class="text-xs font-mono text-gray-300 mb-1">
+                  <span class="text-gray-500"><%= log['timestamp'] %></span>
+                  <span class="text-blue-400">[<%= log['level'] %>]</span>
+                  <span class="text-gray-100"><%= log['message'] %></span>
+                </div>
+              <% end %>
+            </div>
+          </details>
+        <% end %>
+      </div>
+    </div>
+
+  </div>
+</div>
