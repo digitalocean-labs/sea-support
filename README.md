@@ -12,6 +12,8 @@ Sea Support is an educational Rails application that shows how to build a modern
 
 We've built it around **MoodBrew** - an imaginary smart coffee machine that reads your mood and brews accordingly. From panicked "no coffee for 3 days!" emergencies to feature requests like "hangover mode please!", Sea Support handles real-world support scenarios with a coffee-themed twist.
 
+![support_tickets_dashboard](https://github.com/user-attachments/assets/df4bee13-ffc9-414d-b47d-86ec07333242)
+
 ### What You'll Learn
 
 - **Rails 8 + MongoDB**: Modern Rails patterns with flexible document storage
@@ -28,6 +30,12 @@ We've built it around **MoodBrew** - an imaginary smart coffee machine that read
 📊 **Performance Tracking** - Monitor AI accuracy and agent productivity
 🔍 **Full-Text Search** - MongoDB text indexes for fast ticket searches
 ⚡ **Real-Time Processing** - Background jobs with detailed status monitoring
+
+![support_tickets_dashboard_with_ai_analysis](https://github.com/user-attachments/assets/ce3e8850-6647-4cd3-9b7e-0078e3216a89)
+
+![coffee_temperature_issue_ticket_with_ai_analysis](https://github.com/user-attachments/assets/35a548fa-52a0-47ec-909f-3e710e3e6048)
+
+![coffee_temperature_issue_ticket_with_detailed_ai_analysis](https://github.com/user-attachments/assets/e5d90f63-8640-4d4b-a86d-b6b371bba08a)
 
 ---
 
