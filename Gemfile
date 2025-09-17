@@ -36,7 +36,7 @@ gem "redcarpet"  # Markdown processing for AI-generated responses
 # LEARNING NOTE: Background Jobs
 # Even though Rails 8 has Solid Queue, it requires Active Record
 # We'll use Sidekiq with MongoDB for background processing
-gem "sidekiq", "~> 7.3"
+gem "sidekiq", "~> 8.0"
 
 # Windows does not include zoneinfo files, so bundle the tzinfo-data gem
 gem "tzinfo-data", platforms: %i[ windows jruby ]
