@@ -10,16 +10,16 @@ FactoryBot.define do
     status { 'new' }
     priority { 'medium' }
     channel { 'web' }
-    
+
     # MOODBREW SPECIFIC
-    machine_model { ['MoodBrew Pro', 'MoodBrew Home', 'MoodBrew Office'].sample }
-    issue_category { ['brewing', 'maintenance', 'connectivity', 'mood-sensor'].sample }
-    customer_mood { ['neutral', 'frustrated', 'angry', 'happy'].sample }
-    
+    machine_model { [ 'MoodBrew Pro', 'MoodBrew Home', 'MoodBrew Office' ].sample }
+    issue_category { [ 'brewing', 'maintenance', 'connectivity', 'mood-sensor' ].sample }
+    customer_mood { [ 'neutral', 'frustrated', 'angry', 'happy' ].sample }
+
     # LEARNING NOTE: Associations
     # Can be overridden when creating: create(:ticket, assigned_agent: agent)
     assigned_agent { nil }
-    
+
     # LEARNING NOTE: Traits for different ticket scenarios
     trait :with_customer do
       after(:build) do |ticket|
@@ -27,20 +27,20 @@ FactoryBot.define do
           customer_name: Faker::Name.name,
           email: Faker::Internet.email,
           phone: Faker::PhoneNumber.phone_number,
-          account_tier: ['free', 'premium', 'enterprise'].sample,
+          account_tier: [ 'free', 'premium', 'enterprise' ].sample,
           moodbrew_serial: "MB-#{Faker::Alphanumeric.alphanumeric(number: 10).upcase}",
           purchase_date: Faker::Date.between(from: 2.years.ago, to: Date.today)
         )
       end
     end
-    
+
     trait :with_ai_analysis do
       after(:create) do |ticket|
         ticket.create_ai_analysis(
-          tags: ['brewing-issue', 'hardware', 'urgent'].sample(2),
+          tags: [ 'brewing-issue', 'hardware', 'urgent' ].sample(2),
           summary: "Customer experiencing #{ticket.issue_category} issues with #{ticket.machine_model}",
-          sentiment: ['negative', 'neutral', 'positive'].sample,
-          priority_suggestion: ['high', 'medium', 'low'].sample,
+          sentiment: [ 'negative', 'neutral', 'positive' ].sample,
+          priority_suggestion: [ 'high', 'medium', 'low' ].sample,
           suggested_response: Faker::Lorem.paragraph,
           confidence_score: rand(0.5..1.0).round(2),
           processed_at: Time.current,
@@ -48,7 +48,7 @@ FactoryBot.define do
         )
       end
     end
-    
+
     trait :with_messages do
       after(:create) do |ticket|
         # Customer initial message
@@ -58,7 +58,7 @@ FactoryBot.define do
           content: ticket.description,
           sent_at: ticket.created_at
         )
-        
+
         # Agent response
         ticket.messages.create!(
           sender: 'agent',
@@ -68,13 +68,13 @@ FactoryBot.define do
         )
       end
     end
-    
+
     trait :high_priority do
       priority { 'high' }
       customer_mood { 'angry' }
       subject { "URGENT: #{Faker::Appliance.equipment} completely broken!" }
     end
-    
+
     trait :resolved do
       status { 'resolved' }
       after(:create) do |ticket|
@@ -86,11 +86,11 @@ FactoryBot.define do
         )
       end
     end
-    
+
     trait :assigned do
       association :assigned_agent, factory: :agent
     end
-    
+
     # LEARNING NOTE: Complete ticket with all data
     trait :complete do
       with_customer

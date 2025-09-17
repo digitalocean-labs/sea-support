@@ -51,7 +51,7 @@ RSpec.configure do |config|
   # LEARNING NOTE: Include FactoryBot Methods
   # This lets us use `create(:agent)` instead of `FactoryBot.create(:agent)`
   config.include FactoryBot::Syntax::Methods
-  
+
   # LEARNING NOTE: Database Cleaner for MongoDB
   # MongoDB doesn't support transactions like SQL databases
   # We need to clean the database between tests manually
@@ -59,13 +59,13 @@ RSpec.configure do |config|
     DatabaseCleaner[:mongoid].strategy = :deletion
     DatabaseCleaner[:mongoid].clean_with(:deletion)
   end
-  
+
   config.around(:each) do |example|
     DatabaseCleaner[:mongoid].cleaning do
       example.run
     end
   end
-  
+
   # BEST PRACTICE: Create test data efficiently
   config.before(:each) do
     # Any global test setup here
@@ -92,7 +92,7 @@ RSpec.configure do |config|
   config.filter_rails_from_backtrace!
   # arbitrary gems may also be filtered via:
   # config.filter_gems_from_backtrace("gem name")
-  
+
   # LEARNING NOTE: VCR Configuration for API Testing
   # This will record HTTP requests to AI services for consistent testing
   # We'll configure this when we add AI integration

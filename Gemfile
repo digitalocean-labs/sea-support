@@ -59,24 +59,24 @@ group :development, :test do
 
   # Omakase Ruby styling [https://github.com/rails/rubocop-rails-omakase/]
   gem "rubocop-rails-omakase", require: false
-  
+
   # LEARNING NOTE: Environment Variables
   # dotenv loads .env files for development (like DATABASE_URL, API keys)
   # Production uses real environment variables instead
   gem "dotenv-rails"
-  
+
   # LEARNING NOTE: Testing Stack
   # RSpec is the most popular testing framework for Rails (alternative to Minitest)
   # It provides a more readable DSL (Domain Specific Language) for tests
   gem "rspec-rails", "~> 7.1"
-  
+
   # Rails controller testing helpers (assigns, render_template, etc.)
   gem "rails-controller-testing"
-  
+
   # Factory Bot creates test data (better than fixtures for MongoDB)
   # Follows the Factory pattern - builds objects for testing
   gem "factory_bot_rails"
-  
+
   # Faker generates realistic test data (names, emails, coffee products!)
   gem "faker"
 end
@@ -90,17 +90,17 @@ group :test do
   # Use system testing [https://guides.rubyonrails.org/testing.html#system-testing]
   gem "capybara"
   gem "selenium-webdriver"
-  
+
   # LEARNING NOTE: Additional Testing Tools
   # Database Cleaner ensures a clean database state between tests
   # Essential for MongoDB since transactions work differently than SQL
   gem "database_cleaner-mongoid"
-  
+
   # VCR records HTTP requests for consistent AI service testing
   # This prevents hitting real APIs during tests and ensures speed
   gem "vcr"
   gem "webmock"  # Works with VCR to stub HTTP requests
-  
+
   # SimpleCov generates code coverage reports
   # Helps ensure we're testing enough of our code (target: 80%+)
   gem "simplecov", require: false

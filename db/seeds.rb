@@ -11,11 +11,11 @@ if Rails.env.development?
   ticket_count = Ticket.count
   bg_job_count = BackgroundJob.count
   agent_count = Agent.where(:email.ne => 'admin@moodbrew.com').count
-  
+
   Ticket.destroy_all
   BackgroundJob.destroy_all # Explicitly clear all background job records
   Agent.where(:email.ne => 'admin@moodbrew.com').destroy_all # Keep admin if exists
-  
+
   puts "    ✅ Cleared #{ticket_count} tickets"
   puts "    ✅ Cleared #{bg_job_count} background jobs"
   puts "    ✅ Cleared #{agent_count} agents (keeping admin)"
@@ -95,11 +95,11 @@ ticket1.messages.create!(
   sent_at: 8.hours.ago
 )
 
-# Medium Priority Ticket - Mid-day email  
+# Medium Priority Ticket - Mid-day email
 ticket2 = Ticket.create!(
   subject: "Mood sensor seems inaccurate - always suggests same coffee",
   description: "I've been using my MoodBrew Home for about 6 months and lately the mood sensor keeps suggesting the same coffee blend regardless of how I'm feeling. I've tried recalibrating it following the app instructions, but it's still not working right. It used to be pretty accurate at detecting when I was tired vs energetic, but now it just defaults to medium strength every time.",
-  status: 'open',  
+  status: 'open',
   priority: 'medium',
   channel: 'email',
   machine_model: 'MoodBrew Home',
@@ -133,7 +133,7 @@ ticket3 = Ticket.create!(
   subject: "Question about descaling frequency",
   description: "Hi there! I just got my new MoodBrew Office last week and I'm loving it so far. I was reading through the manual and have a question about the descaling schedule. We have pretty hard water in our office building - should I descale more frequently than the recommended monthly interval? Also, can I use regular white vinegar or do I need to buy the special MoodBrew descaling solution? Thanks!",
   status: 'new',
-  priority: 'low', 
+  priority: 'low',
   channel: 'web',
   machine_model: 'MoodBrew Office',
   issue_category: 'maintenance',
@@ -190,7 +190,7 @@ ticket4.create_customer_info(
 # Add conversation messages
 ticket4.messages.create!(
   sender: 'customer',
-  sender_name: 'Michael Rodriguez', 
+  sender_name: 'Michael Rodriguez',
   content: ticket4.description,
   sent_at: 5.days.ago
 )
@@ -203,10 +203,10 @@ ticket4.messages.create!(
 )
 
 ticket4.messages.create!(
-  sender: 'customer', 
+  sender: 'customer',
   sender_name: 'Michael Rodriguez',
   content: "Thanks for the quick response! I checked and my router does have both bands combined. I separated them and reconnected the MoodBrew to the 2.4GHz network specifically. So far so good - it's been connected for 2 days now.",
-  sent_at: 3.days.ago  
+  sent_at: 3.days.ago
 )
 
 ticket4.messages.create!(
@@ -236,7 +236,7 @@ more_tickets = [
   {
     subject: "Love my MoodBrew! Feature request",
     description: "I absolutely love my MoodBrew Pro! The mood detection is amazing. I was wondering if you could add a feature to schedule different mood profiles for different times of day? Like energetic coffee at 7am but calm coffee at 9pm?",
-    priority: 'low', 
+    priority: 'low',
     issue_category: 'other',
     customer_mood: 'happy',
     customer_name: 'James Patterson',
@@ -251,7 +251,7 @@ more_tickets = [
     subject: "Coffee tastes burnt - temperature too high?",
     description: "The coffee from my MoodBrew Office has been tasting burnt lately, even with medium roast beans. I think the water might be too hot. How can I adjust the brewing temperature?",
     priority: 'medium',
-    issue_category: 'brewing', 
+    issue_category: 'brewing',
     customer_mood: 'neutral',
     customer_name: 'Maria Garcia',
     email: 'mgarcia@lawfirm.com',
@@ -308,24 +308,24 @@ more_tickets = [
 more_tickets.each do |ticket_data|
   # Create tickets with specific timestamps for realistic workflow patterns
   # Mix of different statuses for filtering demonstration
-  statuses = ['new', 'open', 'waiting_customer', 'resolved']
-  status_weights = [0.4, 0.3, 0.2, 0.1] # More new/open tickets than resolved
+  statuses = [ 'new', 'open', 'waiting_customer', 'resolved' ]
+  status_weights = [ 0.4, 0.3, 0.2, 0.1 ] # More new/open tickets than resolved
   selected_status = statuses.sample(1, random: Random.new(ticket_data[:serial].hash)).first
-  
+
   ticket = Ticket.create!(
     subject: ticket_data[:subject],
     description: ticket_data[:description],
     status: selected_status,
     priority: ticket_data[:priority],
-    channel: ['web', 'email', 'chat', 'phone'].sample,
+    channel: [ 'web', 'email', 'chat', 'phone' ].sample,
     machine_model: ticket_data[:serial].split('-')[0].gsub('MB', 'MoodBrew ').gsub('H', 'Home').gsub('P', 'Pro').gsub('O', 'Office').gsub('C', 'Cafe'),
     issue_category: ticket_data[:issue_category],
     customer_mood: ticket_data[:customer_mood],
-    assigned_agent: selected_status == 'new' ? nil : [agent1, agent2, supervisor].sample,
+    assigned_agent: selected_status == 'new' ? nil : [ agent1, agent2, supervisor ].sample,
     created_at: ticket_data[:created_at],
     updated_at: selected_status == 'resolved' ? ticket_data[:created_at] + 1.day : ticket_data[:created_at]
   )
-  
+
   ticket.create_customer_info(
     customer_name: ticket_data[:customer_name],
     email: ticket_data[:email],
@@ -335,7 +335,7 @@ more_tickets.each do |ticket_data|
     purchase_date: ticket_data[:purchase_date],
     warranty_status: 'active'
   )
-  
+
   # Add initial customer message with realistic timestamp
   ticket.messages.create!(
     sender: 'customer',
@@ -360,7 +360,7 @@ Ticket.all.each do |ticket|
       performed_at: rand(1..5).days.ago
     )
   end
-  
+
   if ticket.assigned_agent
     ticket.activities.create!(
       action: 'assigned',
@@ -377,18 +377,18 @@ puts "    ✅ Added activities to tickets"
 puts <<~SUMMARY
 
   🎉 Seeding Complete!
-  
+
   📊 Database Summary:
-  ├── Agents: #{Agent.count} 
+  ├── Agents: #{Agent.count}#{' '}
   ├── Support Tickets: #{Ticket.count}
   └── Total Documents: #{Agent.count + Ticket.count}
-  
+
   🔐 Test Login Credentials:
   ├── Admin: admin@moodbrew.com / password123
-  ├── Supervisor: sarah@moodbrew.com / password123  
+  ├── Supervisor: sarah@moodbrew.com / password123#{'  '}
   ├── Agent 1: mike@moodbrew.com / password123
   └── Agent 2: emma@moodbrew.com / password123
-  
+
   ☕ Ready to brew some great support experiences!
 
 SUMMARY

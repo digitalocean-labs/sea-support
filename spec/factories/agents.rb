@@ -12,7 +12,7 @@ FactoryBot.define do
     password { "password123" }  # Simple password for tests
     password_confirmation { "password123" }  # Required for validation
     role { "agent" }
-    
+
     # LEARNING NOTE: After creating the main object
     # We can use after(:create) to set up associated data
     after(:create) do |agent|
@@ -20,7 +20,7 @@ FactoryBot.define do
       # by our Agent model's initialize_metrics callback
       # But we can customize them in tests if needed
     end
-    
+
     # LEARNING NOTE: Factory Traits
     # Traits let us create variations of the same factory
     # Usage: create(:agent, :supervisor) or create(:admin_agent)
@@ -28,12 +28,12 @@ FactoryBot.define do
       role { "supervisor" }
       name { "#{Faker::Name.name} (Supervisor)" }
     end
-    
+
     trait :admin do
       role { "admin" }
       name { "#{Faker::Name.name} (Admin)" }
     end
-    
+
     # MOODBREW THEME: Coffee-inspired test data
     trait :coffee_lover do
       name { "#{Faker::Coffee.variety} #{Faker::Name.last_name}" }

@@ -8,9 +8,9 @@ class DemoTicketService
   def initialize
     # Use the same AI client configuration as AiService
     agent_key = Rails.application.credentials.dig(:digitalocean, :agent_access_key) rescue nil
-    agent_key ||= ENV['DO_AGENT_ACCESS_KEY']
-    agent_endpoint = ENV.fetch('DO_AGENT_ENDPOINT', nil)
-    
+    agent_key ||= ENV["DO_AGENT_ACCESS_KEY"]
+    agent_endpoint = ENV.fetch("DO_AGENT_ENDPOINT", nil)
+
     if agent_key.present? && agent_endpoint.present?
       @client = OpenAI::Client.new(
         access_token: agent_key,
@@ -20,15 +20,15 @@ class DemoTicketService
     else
       # Fallback to Gradient AI
       api_key = Rails.application.credentials.dig(:digitalocean, :ai_api_key) rescue nil
-      api_key ||= ENV['DO_AI_API_KEY'] || 'test-key'
-      
+      api_key ||= ENV["DO_AI_API_KEY"] || "test-key"
+
       @client = OpenAI::Client.new(
         access_token: api_key,
-        uri_base: ENV.fetch('DO_AI_ENDPOINT', 'https://inference.do-ai.run/v1')
+        uri_base: ENV.fetch("DO_AI_ENDPOINT", "https://inference.do-ai.run/v1")
       )
       @using_agent = false
     end
-    
+
     Rails.logger.info "🎪 DemoTicketService initialized using #{@using_agent ? 'Agent' : 'Gradient AI'}"
   end
 
@@ -36,10 +36,10 @@ class DemoTicketService
   def generate_demo_ticket
     begin
       Rails.logger.info "🎭 Generating demo ticket..."
-      
+
       # Create prompt for realistic ticket generation
       prompt = build_demo_ticket_prompt
-      
+
       # Call AI service to generate ticket data
       response = if @using_agent
         @client.chat(
@@ -65,7 +65,7 @@ class DemoTicketService
                 content: demo_system_prompt
               },
               {
-                role: "user", 
+                role: "user",
                 content: prompt
               }
             ],
@@ -74,16 +74,16 @@ class DemoTicketService
           }
         )
       end
-      
+
       content = response.dig("choices", 0, "message", "content")
       Rails.logger.info "🤖 Generated demo content: #{content&.truncate(100)}..."
-      
+
       # Parse the AI response and create ticket data
       parse_demo_response(content)
-      
+
     rescue => e
       Rails.logger.error "Demo ticket generation failed: #{e.message}"
-      
+
       # Fallback to static demo data if AI fails
       Rails.logger.info "🔄 Using fallback demo data"
       generate_fallback_demo_ticket
@@ -98,47 +98,47 @@ class DemoTicketService
         Generate a realistic MoodBrew coffee machine support ticket for demonstration purposes. Make it creative but believable.
 
         Create a support scenario with:
-        
+
         **CUSTOMER PROFILE:**
         - Realistic customer name and contact info
         - Account tier (free, premium, or enterprise)
         - MoodBrew model and serial number
         - Purchase/warranty details
-        
+
         **ISSUE DETAILS:**
         - Engaging subject line
         - Detailed description of a coffee machine problem
         - Customer mood reflecting the issue severity
         - Realistic issue category and priority
         - Contact channel (email, phone, chat, etc.)
-        
+
         **MAKE IT INTERESTING:**
         - Use creative scenarios (mood sensor comedy, coffee emergencies, etc.)
         - Reference MoodBrew features like mood detection, app connectivity
         - Include realistic technical details
         - Show customer personality in the description
-        
+
         **MoodBrew Models:** MoodBrew Home, MoodBrew Pro, MoodBrew Office, MoodBrew Cafe
         **Issue Categories:** brewing, maintenance, connectivity, mood-sensor, other
         **Customer Moods:** happy, neutral, concerned, frustrated, angry
-        
+
         Format your response as a realistic support ticket scenario.
       PROMPT
     else
       <<~PROMPT
         Generate realistic MoodBrew support ticket data for a demo. Be creative but believable.
-        
+
         Include:
         - Customer name, email, phone
-        - MoodBrew machine model and serial number  
+        - MoodBrew machine model and serial number#{'  '}
         - Engaging subject line
         - Detailed issue description with customer personality
         - Appropriate priority and category
         - Customer mood reflecting the issue
         - Account tier and warranty status
-        
+
         Make it interesting - coffee emergencies, mood sensor comedy, connectivity issues, etc.
-        
+
         Respond with realistic support ticket content that shows the customer's voice.
       PROMPT
     end
@@ -147,17 +147,17 @@ class DemoTicketService
   def demo_system_prompt
     <<~SYSTEM
       You are a creative assistant that generates realistic MoodBrew coffee machine support tickets for demonstration purposes.
-      
+
       MoodBrew Context:
       - AI-powered coffee machines that detect user mood and adjust coffee accordingly
       - Models: MoodBrew Home ($299), MoodBrew Pro ($499), MoodBrew Office ($799), MoodBrew Cafe ($1299)
       - Features: mood detection, app connectivity, custom profiles, premium subscription
       - Common issues: brewing problems, mood sensor glitches, connectivity, maintenance
-      
+
       Create engaging, realistic scenarios that showcase different types of support issues.
       Make customers feel real with distinct personalities and communication styles.
       Include technical details that demonstrate product knowledge.
-      
+
       Generate diverse scenarios - from coffee emergencies to happy feature requests.
     SYSTEM
   end
@@ -169,10 +169,10 @@ class DemoTicketService
       # Try to extract structured data from the response
       # For agent responses, parse the natural language
       ticket_data = extract_ticket_data_from_text(content)
-      
+
       Rails.logger.info "📋 Parsed demo ticket data: #{ticket_data[:subject]&.truncate(50)}"
       ticket_data
-      
+
     rescue => e
       Rails.logger.error "Failed to parse demo response: #{e.message}"
       generate_fallback_demo_ticket
@@ -198,14 +198,14 @@ class DemoTicketService
       if match = content.match(/(?:Subject|ISSUE):\s*([^\n]+)/i)
         ticket_data[:subject] = match[1].strip
       end
-      
+
       # Extract description from content
       description_patterns = [
         /Description:\s*(.*?)(?:\n\n|\n[A-Z]|$)/im,
         /Issue:\s*(.*?)(?:\n\n|\n[A-Z]|$)/im,
         /Problem:\s*(.*?)(?:\n\n|\n[A-Z]|$)/im
       ]
-      
+
       description_patterns.each do |pattern|
         if match = content.match(pattern)
           description = match[1].strip
@@ -224,11 +224,11 @@ class DemoTicketService
 
     # Extract customer mood if mentioned in content
     mood_keywords = {
-      'angry' => %w[furious rage angry mad upset pissed],
-      'frustrated' => %w[frustrated annoying frustrating irritated],
-      'concerned' => %w[worried concerned trouble problem issue],
-      'happy' => %w[love great excellent amazing wonderful fantastic],
-      'neutral' => %w[please help need question]
+      "angry" => %w[furious rage angry mad upset pissed],
+      "frustrated" => %w[frustrated annoying frustrating irritated],
+      "concerned" => %w[worried concerned trouble problem issue],
+      "happy" => %w[love great excellent amazing wonderful fantastic],
+      "neutral" => %w[please help need question]
     }
 
     content_lower = content.downcase
@@ -240,12 +240,12 @@ class DemoTicketService
     end
 
     # Adjust priority based on customer mood and content urgency
-    if ticket_data[:customer_mood] == 'angry' || content_lower.include?('urgent') || content_lower.include?('emergency')
-      ticket_data[:priority] = 'urgent'
-    elsif ticket_data[:customer_mood] == 'frustrated' || content_lower.include?('asap')
-      ticket_data[:priority] = 'high'  
-    elsif ticket_data[:customer_mood] == 'happy' || content_lower.include?('feature request')
-      ticket_data[:priority] = 'low'
+    if ticket_data[:customer_mood] == "angry" || content_lower.include?("urgent") || content_lower.include?("emergency")
+      ticket_data[:priority] = "urgent"
+    elsif ticket_data[:customer_mood] == "frustrated" || content_lower.include?("asap")
+      ticket_data[:priority] = "high"
+    elsif ticket_data[:customer_mood] == "happy" || content_lower.include?("feature request")
+      ticket_data[:priority] = "low"
     end
 
     ticket_data
@@ -255,10 +255,10 @@ class DemoTicketService
     # Generate realistic customer data using common names and patterns
     first_names = %w[Emma James Sarah Michael Jennifer David Jessica Chris Amanda Matt Lisa Ryan Maria Kevin Amy Daniel]
     last_names = %w[Johnson Smith Williams Brown Jones Garcia Miller Davis Rodriguez Wilson Martinez Anderson Taylor Thomas]
-    
+
     first_name = first_names.sample
     last_name = last_names.sample
-    
+
     {
       customer_name: "#{first_name} #{last_name}",
       email: "#{first_name.downcase}.#{last_name.downcase}#{rand(100)}@#{%w[gmail.com yahoo.com outlook.com company.com].sample}",
@@ -284,7 +284,7 @@ class DemoTicketService
       {
         subject: "Feature request: Hangover mode please! 🍷➡️☕",
         description: "Hi there! I absolutely LOVE my MoodBrew Home - best purchase ever! But I have a weekend request: could you add a 'hangover mode' that automatically makes the strongest, most caffeinated coffee possible without judging my poor life choices from the night before? Right now it detects my hangover as 'illness' and suggests herbal tea. Not helpful! 😅 I'd even pay extra for this feature.",
-        priority: "low", 
+        priority: "low",
         customer_mood: "happy",
         issue_category: "other",
         channel: "chat"
@@ -293,7 +293,7 @@ class DemoTicketService
         subject: "App won't connect to my MoodBrew Office",
         description: "Our office MoodBrew Cafe has been working great for 6 months, but since last week the mobile app won't connect. The machine works fine with the physical buttons, but none of us can access our custom mood profiles or see the brewing history. We've tried restarting both the machine and our phones. The WiFi connection shows as good, but the app just says 'Connection timeout' every time. This is affecting our whole team's coffee experience!",
         priority: "medium",
-        customer_mood: "concerned", 
+        customer_mood: "concerned",
         issue_category: "connectivity",
         channel: "phone"
       },
@@ -302,7 +302,7 @@ class DemoTicketService
         description: "Hi MoodBrew support, I've noticed a weird grinding/clicking noise coming from my MoodBrew Pro when it's brewing. It started about a week ago and seems to be getting louder. The coffee still tastes fine and the mood detection works perfectly, but I'm worried something might be wrong with the internal mechanism. The machine is about 8 months old. Should I be concerned? The noise happens mostly during the grinding phase but sometimes during brewing too.",
         priority: "medium",
         customer_mood: "concerned",
-        issue_category: "maintenance", 
+        issue_category: "maintenance",
         channel: "email"
       },
       {
@@ -316,10 +316,10 @@ class DemoTicketService
     ]
 
     scenario = scenarios.sample
-    
+
     {
       subject: scenario[:subject],
-      description: scenario[:description], 
+      description: scenario[:description],
       priority: scenario[:priority],
       channel: scenario[:channel],
       issue_category: scenario[:issue_category],
