@@ -1,5 +1,5 @@
-# Sea Support 🌊
-### AI-Powered Customer Support Platform for MoodBrew Coffee Machines
+# Sea Support: Rails, MongoDB, & DigitalOcean Gradient AI Reference App
+Reference application for building AI-powered customer support platform with Gradient AI, MongoDB, Ruby on Rails, and Sidekiq.
 
 [![Rails](https://img.shields.io/badge/Rails-8.0+-red.svg)](https://rubyonrails.org/)
 [![MongoDB](https://img.shields.io/badge/MongoDB-7.0+-green.svg)](https://www.mongodb.com/)
@@ -8,448 +8,392 @@
 
 ---
 
-## 🎯 What is Sea Support?
+Sea Support is an educational Rails application that shows how to build a modern customer support platform with AI integration. Think of it as a complete example of how AI can transform customer service while keeping humans in control.
 
-Sea Support is a comprehensive AI-powered customer support platform that demonstrates modern web development with sophisticated AI integration. Built as an educational Rails 8 + MongoDB application, it showcases how artificial intelligence can transform customer support operations while maintaining human oversight and control.
+We've built it around **MoodBrew** - an imaginary smart coffee machine that reads your mood and brews accordingly. From panicked "no coffee for 3 days!" emergencies to feature requests like "hangover mode please!", Sea Support handles real-world support scenarios with a coffee-themed twist.
 
-**Demo Context:** The application manages support tickets for **MoodBrew** - a fictional AI-powered smart coffee machine that detects users' moods and brews the perfect coffee accordingly. From "morning monster" emergencies to "hangover mode" feature requests, Sea Support handles it all with intelligence and humor.
+### What You'll Learn
 
-### ✨ Key Features
+- **Rails 8 + MongoDB**: Modern Rails patterns with flexible document storage
+- **AI Integration**: DigitalOcean Agent + Gradient AI with intelligent fallbacks
+- **Background Processing**: Sidekiq jobs with comprehensive monitoring
+- **Modern UI**: Tailwind CSS with Hotwire and Stimulus controllers
+- **Testing**: RSpec with MongoDB patterns and AI service mocking
 
-- 🤖 **AI-Powered Ticket Analysis**: Automatic classification, tagging, and priority assignment
-- 📝 **Intelligent Response Suggestions**: AI-generated customer responses with confidence scoring
-- 🎭 **Demo Ticket Generator**: Create realistic support scenarios for testing and demos
-- 📊 **Comprehensive Analytics**: Track AI performance and agent productivity
-- 🔍 **Advanced Search**: Full-text search across tickets with MongoDB text indexes
-- ⚡ **Real-time Processing**: Background jobs with detailed monitoring
-- 🎨 **Modern UI**: Tailwind CSS with interactive Stimulus controllers
-- 🧠 **DigitalOcean Agent Integration**: Context-aware AI responses using built-in RAG capabilities
+### Key Features
+
+🤖 **Smart Ticket Analysis** - AI automatically tags, prioritizes, and analyzes tickets
+📝 **Response Suggestions** - Generate helpful customer replies with confidence scoring
+🎭 **Demo Generator** - Create realistic support scenarios instantly
+📊 **Performance Tracking** - Monitor AI accuracy and agent productivity
+🔍 **Full-Text Search** - MongoDB text indexes for fast ticket searches
+⚡ **Real-Time Processing** - Background jobs with detailed status monitoring
 
 ---
 
-## 🚀 Quick Start
+## Getting Started
 
-### Prerequisites
+### What You'll Need
 
-- **Ruby 3.3+** with Rails 8.0+
-- **MongoDB 7.0+** (local or DigitalOcean Managed)
-- **Node.js 18+** for asset compilation
-- **DigitalOcean Account** (for AI services)
+- Ruby 3.3+ with Rails 8.0+
+- MongoDB (local installation or DigitalOcean Managed)
+- Node.js 18+ for CSS compilation
+- A DigitalOcean account for AI services
+
+### Setting Up DigitalOcean AI
+
+Before installing the app, you'll need to set up your AI agent on DigitalOcean's Gradient AI platform. This takes about 10 minutes.
+
+#### Step 1: Create a Knowledge Base
+
+1. Follow the official DigitalOcean guide: [Create and Manage Agent Knowledge Bases](https://docs.digitalocean.com/products/gradient-ai-platform/how-to/create-manage-agent-knowledge-bases/)
+2. Name: Something like `moodbrew-support-kb`
+
+**What to use from this project:**
+
+- Upload the documents from the `knowledge_base/` folder in this repo
+- These contain MoodBrew product information, common issues, and FAQs
+- You can also add your own documentation or modify the provided files
+
+#### Step 2: Create an AI Agent
+
+Follow the official DigitalOcean guide: [Create Agents](https://docs.digitalocean.com/products/gradient-ai-platform/how-to/create-agents/)
+
+**Configuration tips for customer support:**
+
+- **System Prompt** - Use this optimized prompt for support scenarios:
+  ```
+  You are a helpful customer support agent for MoodBrew coffee machines.
+  Use the knowledge base to answer questions accurately.
+  Be friendly, professional, and solution-focused.
+  If you don't know something, say so honestly.
+  Always prioritize customer satisfaction and safety.
+  ```
+- **Temperature**: 0.3 (for consistent responses)
+- **Max Tokens**: 500 (appropriate for support responses)
+- **Knowledge Base**: Link it to the knowledge base you created in Step 1
+
+#### Step 3: Get Your Credentials
+
+After creating your agent, you'll need:
+- **Endpoint URL**: Found in the agent's API section (looks like `https://agent-xxx.agents.do-ai.run/api/v1/`)
+- **Access Key**: Your API key (starts with `doa_v1_`)
+
+Save these - you'll add them to your `.env` file in the installation steps below.
 
 ### Installation
 
-1. **Clone the repository**
-   ```bash
-   git clone https://github.com/yourusername/sea-support.git
-   cd sea-support
-   ```
-
-2. **Install dependencies**
-   ```bash
-   bundle install
-   npm install  # For Tailwind CSS compilation
-   ```
-
-3. **Configure environment**
-   ```bash
-   # Copy environment template
-   cp .env.example .env
-   
-   # Edit with your settings
-   nano .env
-   ```
-
-4. **Set up credentials**
-   ```bash
-   # Configure Rails encrypted credentials
-   bin/rails credentials:edit
-   
-   # Add your DigitalOcean Agent key:
-   # digitalocean:
-   #   agent_access_key: your_agent_access_key
-   ```
-
-5. **Configure MongoDB**
-   ```bash
-   # Edit MongoDB connection
-   nano config/mongoid.yml
-   
-   # For local MongoDB:
-   # MONGODB_URI=mongodb://localhost:27017/sea_support_development
-
-   # For DigitalOcean Managed MongoDB:
-   # MONGODB_URI=mongodb+srv://user:pass@cluster.mongodb.net/sea_support
-   ```
-
-6. **Initialize the database**
-   ```bash
-   # Create collections and indexes
-   bin/rails db:mongoid:create_collections
-   bin/rails db:mongoid:create_indexes
-   
-   # Load sample data
-   bin/rails db:seed
-   ```
-
-7. **Start the application**
-   ```bash
-   # Development mode with CSS watching
-   bin/dev
-   
-   # Or start components separately:
-   bin/rails server          # Rails app (port 3000)
-   bundle exec sidekiq       # Background jobs
-   ```
-
-8. **Visit the application**
-   ```
-   http://localhost:3000
-   ```
-
----
-
-## 🎮 Usage Guide
-
-### Getting Started
-
-1. **Sign Up/Login**: Create an agent account to access the dashboard
-2. **Explore Sample Tickets**: The seed data includes various MoodBrew support scenarios
-3. **Try AI Analysis**: Click "Analyze" on any ticket to see AI-powered insights
-4. **Generate Demo Tickets**: Use the "Generate Demo Ticket" feature for realistic test data
-
-### Core Workflows
-
-#### 🎭 Generating Demo Tickets
-Perfect for testing and demonstrations:
-
-1. Navigate to **Create New Ticket** (`/tickets/new`)
-2. Click **"Generate Demo Ticket"** in the purple section
-3. Watch AI create realistic MoodBrew scenarios with customer personalities
-4. Modify the generated data or create another scenario
-5. Submit to create the ticket
-
-**Sample Generated Scenarios:**
-- "Coffee emergency! Machine thinks I'm always sad ☹️"
-- "Feature request: Hangover mode please! 🍷➡️☕"
-- "App won't connect to my MoodBrew Office"
-
-#### 🤖 AI Ticket Analysis
-Transform raw support requests into actionable insights:
-
-1. Open any ticket from the dashboard
-2. Click **"Analyze with AI"** 
-3. AI analyzes using MoodBrew knowledge base context
-4. Review generated tags, priority, sentiment, and summary
-5. Approve, modify, or reject AI suggestions
-6. Generate customer response suggestions
-
-#### 📊 Monitoring AI Performance
-Track how well your AI is performing:
-
-1. Visit **Admin > Background Jobs** for detailed job monitoring
-2. Check **Analytics Dashboard** for AI accuracy metrics
-3. Review individual ticket analysis debug data
-4. Monitor processing times and success rates
-
-### Advanced Features
-
-#### 🔍 Debug Mode
-For development and troubleshooting:
-
-```ruby
-# Rails console debugging
-bin/rails console
-
-# Test AI service directly
-> ticket = Ticket.first
-> service = AiService.new(true)  # Enable debug mode
-> result = service.analyze_ticket(ticket)
-
-# Check background job details
-> job = BackgroundJob.recent.first
-> job.processing_steps  # Step-by-step execution
-> job.console_logs      # Complete debug output
+**1. Get the Code**
+```bash
+git clone https://github.com/yourusername/sea-support.git
+cd sea-support
 ```
 
-#### 🔧 Background Job Monitoring
-Real-time visibility into AI processing:
+**2. Install Everything**
+```bash
+bundle install
+npm install
+```
 
-- **Job Dashboard**: `/admin/background_jobs`
-- **Individual Job Details**: Complete request/response data
-- **Retry Management**: Automatic exponential backoff
-- **Error Tracking**: Comprehensive error logging with stack traces
+**3. Set Up Your Environment**
+```bash
+cp .env.example .env
+```
+
+Edit your `.env` file with your database and AI service details. The example file has helpful comments to guide you.
+
+**4. Configure AI Services**
+
+Add the DigitalOcean AI credentials from Step 3 above to your `.env` file:
+```bash
+# Replace with your actual agent credentials
+DO_AGENT_ENDPOINT=https://agent-abc123.agents.do-ai.run/api/v1/
+DO_AGENT_ACCESS_KEY=doa_v1_xxxxxxxxxxxx
+```
+
+The app will use these environment variables by default. (For production, you can optionally use Rails encrypted credentials instead)
+
+**5. Set Up the Database**
+
+For local MongoDB:
+```bash
+# Make sure MongoDB is running, then:
+bin/rails db:mongoid:create_collections
+bin/rails db:mongoid:create_indexes
+bin/rails db:seed
+```
+
+For DigitalOcean Managed MongoDB, just update your `MONGODB_URI` in `.env` and run the same commands.
+
+**6. Start Everything**
+
+The easiest way:
+```bash
+bin/dev
+```
+
+This starts the Rails server and watches for CSS changes. Your app will be at `http://localhost:3000`.
+
+For more control, run components separately:
+```bash
+bin/rails server          # Main app on port 3000
+bundle exec sidekiq       # Background job processor
+```
 
 ---
 
-## 🏗️ Architecture Overview
+## How to Use It
+
+### First Steps
+
+1. **Create an account** - Sign up as a support agent
+2. **Explore sample data** - The seed command loads realistic MoodBrew tickets
+3. **Try the AI features** - Click "Analyze with AI" on any ticket
+4. **Generate demo content** - Use the demo ticket generator for testing
+
+### Core Features
+
+#### Demo Ticket Generator
+Perfect for testing or demonstrations:
+
+- Go to "New Ticket" and look for the purple "Generate Demo Ticket" section
+- Click the button and watch AI create realistic scenarios
+- Each generation includes customer personality, problem details, and context
+- Modify the generated content or generate another one
+- Submit to create a real ticket you can analyze
+
+#### AI Ticket Analysis
+Transform raw support requests into actionable insights:
+
+- Open any ticket and click "Analyze with AI"
+- The system analyzes using MoodBrew knowledge context
+- Review AI-generated tags, priority levels, sentiment analysis, and summaries
+- Accept, modify, or reject the suggestions
+- Generate suggested customer responses with confidence scoring
+
+#### Background Job Monitoring
+See what's happening behind the scenes:
+
+- Visit `/admin/background_jobs` for detailed monitoring
+- Watch AI processing in real-time
+- Debug failed jobs with complete error logs
+- Track processing times and success rates
+
+### Demo Scenarios
+
+The system comes with engaging scenarios like:
+
+**High-Priority Emergency:**
+```
+"COFFEE MACHINE BROKEN - NO COFFEE FOR 3 DAYS!!!"
+Customer: Mike (Very upset morning person)
+AI Analysis: Priority: URGENT, Sentiment: Very Negative
+Tags: [brewing-failure, mood-sensor, refund-request]
+```
+
+**Feature Request:**
+```
+"Feature Request: Hangover mode please! 🍷➡️☕"
+Customer: Sarah (Hopeful weekend warrior)
+AI Analysis: Priority: LOW, Sentiment: Positive
+Tags: [feature-request, mood-profiles, weekend-mode]
+```
+
+---
+
+## Troubleshooting AI Setup
+
+### Common Issues and Solutions
+
+#### Agent Not Responding
+- **Check credentials**: Ensure your `DO_AGENT_ENDPOINT` and `DO_AGENT_ACCESS_KEY` are correctly copied
+- **Verify endpoint URL**: It should end with `/api/v1/` (including the trailing slash)
+- **Test the agent**: Use the test console in DigitalOcean to verify the agent works
+- **Check quota**: Ensure you haven't exceeded your API usage limits
+
+#### Poor Quality Responses
+- **Enrich knowledge base**: Add more detailed documentation to your knowledge base
+- **Adjust temperature**: Lower values (0.2-0.3) give more consistent responses
+- **Refine system prompt**: Make the agent instructions more specific to your use case
+- **Check model selection**: `gpt-4o` generally provides better responses than `gpt-4o-mini`
+
+#### Knowledge Base Not Working
+- **Index status**: Wait for the knowledge base to finish indexing (can take a few minutes)
+- **Content format**: Ensure documents are in supported formats (text, markdown, PDF)
+- **Test retrieval**: Use the knowledge base test feature to verify content is searchable
+- **Agent connection**: Confirm the agent is linked to the correct knowledge base
+
+#### Testing Your Setup
+After configuration, test the AI integration:
+
+```bash
+# Run the test script
+ruby scripts/test_agent_api.rb
+
+# Or test in Rails console
+bin/rails console
+> service = AiService.new(true)  # Enable debug mode
+> ticket = Ticket.first || Ticket.create(subject: "Test", description: "My coffee is cold")
+> result = service.analyze_ticket(ticket)
+> puts result
+```
+
+---
+
+## Development
+
+### Running Tests
+```bash
+bundle exec rspec                    # Full test suite
+bundle exec rspec spec/models/       # Just model tests
+bundle exec rspec spec/services/     # Service layer tests
+```
+
+### Code Quality
+```bash
+bundle exec rubocop                  # Check style
+bundle exec rubocop -a               # Auto-fix issues
+bundle exec brakeman                 # Security scan
+```
+
+### Database Operations
+```bash
+bin/rails db:mongoid:create_indexes     # Ensure performance indexes
+bin/rails db:mongoid:purge              # Clear all data
+bin/rails db:seed                       # Reload sample data
+```
+
+### Debugging AI Integration
+
+The app includes comprehensive debugging tools:
+
+```ruby
+# In Rails console
+service = AiService.new(true)  # Enable debug mode
+result = service.analyze_ticket(Ticket.first)
+
+# Check background job details
+job = BackgroundJob.recent.first
+job.processing_steps     # Step-by-step execution
+job.console_logs        # Complete debug output
+```
+
+Debug endpoints for development:
+- `/tickets/:id/debug_rag` - RAG response data
+- `/tickets/:id/debug_progress` - Processing timing
+- `/tickets/:id/debug_logs` - Complete logs
+
+---
+
+## Architecture
 
 ### Technology Stack
 
 | Component | Technology | Purpose |
 |-----------|------------|---------|
-| **Backend** | Ruby on Rails 8 | Web framework with modern conventions |
+| **Backend** | Ruby on Rails 8 | Modern web framework with conventions |
 | **Database** | MongoDB + Mongoid | Flexible document storage for AI metadata |
-| **AI Integration** | DigitalOcean Agent | Specialized AI agent with built-in RAG capabilities |
-| **Frontend** | Tailwind CSS + Stimulus | Modern, responsive UI with interactive features |
-| **Background Jobs** | Sidekiq | Reliable AI processing with retry logic |
-| **Testing** | RSpec + VCR + Factory Bot | Comprehensive test coverage with AI mocking |
+| **AI Services** | DigitalOcean Agent | Specialized support agent with built-in RAG |
+| **Frontend** | Tailwind + Stimulus | Responsive UI with interactive features |
+| **Background Jobs** | Sidekiq | Reliable AI processing with monitoring |
+| **Testing** | RSpec + VCR | Comprehensive coverage with AI mocking |
 
-### Data Model Highlights
+### Key Architectural Decisions
 
-```ruby
-# Ticket with embedded documents (MongoDB advantage)
-class Ticket
-  include Mongoid::Document
-  
-  field :subject, type: String
-  field :description, type: String
-  field :priority, type: String
-  field :status, type: String
-  
-  # AI analysis embedded directly in ticket
-  embeds_one :ai_analysis
-  
-  # Customer info embedded for performance
-  embeds_one :customer_info
-  
-  # Messages embedded for complete ticket context
-  embeds_many :messages
-end
-```
+**MongoDB Over PostgreSQL**: The flexible schema handles evolving AI metadata beautifully. We use embedded documents for related data like AI analysis and customer info.
 
-### AI Service Architecture
+**Service Object Pattern**: Business logic lives in service classes (`AiService`, `DemoTicketService`) rather than bloating models or controllers.
 
-```ruby
-# DigitalOcean Agent integration with built-in RAG
-class AiService
-  def analyze_ticket(ticket, include_response = true)
-    # 1. Build comprehensive analysis prompt
-    prompt = build_analysis_prompt(ticket)
-    
-    # 2. Call DigitalOcean Agent with RAG retrieval enabled
-    response = @client.chat(
-      parameters: {
-        messages: [{ role: "user", content: prompt }],
-        extra_body: {
-          include_retrieval_info: true,
-          include_functions_info: true
-        }
-      }
-    )
-    
-    # 3. Parse structured JSON response with confidence scoring
-    analysis_result = parse_ai_response(response, ticket)
-    
-    # 4. Generate customer response if high confidence (>70%)
-    if include_response && analysis_result[:confidence_score] > 0.7
-      analysis_result[:suggested_response] = generate_response(ticket)
-    end
-    
-    # 5. Store complete processing details for monitoring
-    store_debug_data(response, analysis_result)
-  end
-end
-```
+**Comprehensive Job Tracking**: The `BackgroundJob` model stores complete AI processing history, replacing ephemeral Redis cache for permanent data.
+
+**Dual AI Backend**: DigitalOcean Agent is primary, with Gradient AI as fallback, showing real-world resilience patterns.
 
 ---
 
-## 🧪 Demo Scenarios
-
-Sea Support comes with engaging MoodBrew support scenarios that showcase different AI capabilities:
-
-### High-Priority Emergencies
-```
-Subject: "COFFEE MACHINE BROKEN - NO COFFEE FOR 3 DAYS!!!"
-Customer: Mike (Angry morning person)
-AI Analysis: 
-- Priority: URGENT
-- Sentiment: Very Negative  
-- Tags: [brewing-failure, mood-sensor, refund-request]
-- Confidence: 95%
-```
-
-### Feature Requests  
-```
-Subject: "Feature Request: Hangover mode please! 🍷➡️☕"
-Customer: Sarah (Happy but needs stronger coffee)
-AI Analysis:
-- Priority: LOW
-- Sentiment: Positive
-- Tags: [feature-request, mood-profiles, weekend-mode]
-- Confidence: 88%
-```
-
-### Technical Issues
-```
-Subject: "App won't connect to my MoodBrew Office"  
-Customer: Corporate IT team
-AI Analysis:
-- Priority: MEDIUM
-- Sentiment: Concerned
-- Tags: [connectivity, app-integration, office-setup]
-- Confidence: 92%
-```
-
----
-
-## 🛠️ Development
-
-### Running Tests
-
-```bash
-# Full test suite
-bundle exec rspec
-
-# Specific test files
-bundle exec rspec spec/models/ticket_spec.rb
-bundle exec rspec spec/services/ai_service_spec.rb
-
-# Generate coverage report
-bundle exec rspec --format documentation
-```
-
-### Code Quality
-
-```bash
-# Ruby linting (Rails Omakase style)
-bundle exec rubocop
-
-# Security scanning
-bundle exec brakeman
-
-# Auto-fix style issues
-bundle exec rubocop -a
-```
-
-### Database Operations
-
-```bash
-# MongoDB specific operations
-bin/rails db:mongoid:create_indexes     # Performance indexes
-bin/rails db:mongoid:create_search_indexes  # Full-text search
-bin/rails db:mongoid:purge              # Clear all data
-bin/rails db:seed                       # Load sample MoodBrew data
-```
-
-### Background Jobs
-
-```bash
-# Start Sidekiq processor
-bundle exec sidekiq
-
-# Monitor job queue
-# Visit: http://localhost:4567 (Sidekiq web UI)
-
-# Process jobs manually (development)
-bin/rails jobs:work
-```
-
----
-
-## 📚 Learning Resources
-
-This project serves as an educational platform demonstrating:
-
-- **Rails 8 Conventions**: Modern Rails patterns and best practices
-- **MongoDB Document Modeling**: Embedded documents, indexes, aggregations
-- **AI Integration Patterns**: Service objects, error handling, fallback strategies  
-- **Background Job Processing**: Sidekiq patterns, retry logic, monitoring
-- **Testing AI Applications**: VCR cassettes, factory patterns, mock strategies
-
-### Educational Comments
-
-The codebase includes extensive `# LEARNING NOTE:` comments explaining:
-- Why certain architectural decisions were made
-- MongoDB vs SQL patterns and trade-offs
-- AI service integration best practices
-- Rails conventions and modern patterns
-
----
-
-## 🚀 Deployment
+## Deployment
 
 ### DigitalOcean App Platform
 
-1. **Create app from GitHub**:
-   ```bash
-   # Using doctl CLI
-   doctl apps create --spec .do/app.yaml
-   ```
+1. **Create from GitHub:**
+```bash
+doctl apps create --spec .do/app.yaml
+```
 
-2. **Configure environment variables**:
-   - `MONGODB_URI`: Your managed MongoDB connection string
-   - `DO_AGENT_ENDPOINT`: DigitalOcean Agent API endpoint
-   - `DO_AGENT_ACCESS_KEY`: DigitalOcean Agent access key
-   - `RAILS_MASTER_KEY`: Your Rails credentials key
+2. **Set environment variables in DO console:**
+- `MONGODB_URI`: Your managed MongoDB connection
+- `DO_AGENT_ENDPOINT`: DigitalOcean Agent API endpoint
+- `DO_AGENT_ACCESS_KEY`: DigitalOcean Agent access key
+- `RAILS_MASTER_KEY`: From `config/master.key`
 
-3. **Deploy**:
-   ```bash
-   doctl apps create-deployment <app-id>
-   ```
+3. **Deploy:**
+```bash
+doctl apps create-deployment <app-id>
+```
 
-### Docker Deployment
+### Docker
 
 ```bash
-# Build image
+# Build
 docker build -t sea-support .
 
-# Run with environment
+# Run
 docker run -p 3000:3000 \
   -e MONGODB_URI=your_mongo_uri \
-  -e DO_AGENT_ENDPOINT=your_agent_endpoint \
-  -e DO_AGENT_ACCESS_KEY=your_agent_key \
+  -e DO_AGENT_ENDPOINT=your_endpoint \
+  -e DO_AGENT_ACCESS_KEY=your_key \
   sea-support
 ```
 
 ---
 
-## 🤝 Contributing
+## Contributing
+
+We'd love your help making this educational resource better!
 
 1. Fork the repository
-2. Create a feature branch: `git checkout -b feature/amazing-feature`
-3. Follow the existing code style and add tests
-4. Commit with descriptive messages: `git commit -m "Add amazing feature"`
-5. Push to your fork: `git push origin feature/amazing-feature`
-6. Open a Pull Request
+2. Create a feature branch: `git checkout -b feature/amazing-addition`
+3. Make your changes with tests
+4. Commit with clear messages: `git commit -m "Add amazing feature"`
+5. Push and open a Pull Request
 
-### Development Guidelines
+### Guidelines
 
-- Add tests for new features (aim for 80%+ coverage)
-- Include `# LEARNING NOTE:` comments for educational value
-- Follow Rails conventions and MongoDB best practices
-- Test AI integrations with VCR cassettes
-- Update documentation for user-facing changes
-
----
-
-## 📝 License
-
-This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+- **Add tests** for new features (we aim for 80%+ coverage)
+- **Include educational comments** - this is a learning resource
+- **Follow Rails conventions** and MongoDB best practices
+- **Test AI integrations** with VCR cassettes for consistency
+- **Update docs** for user-facing changes
 
 ---
 
-## 🙏 Acknowledgments
+## Educational Value
 
-- **DigitalOcean** for AI services and managed MongoDB
-- **Ruby on Rails** community for excellent documentation
-- **MongoDB** for flexible document modeling
-- **The Coffee Community** for inspiring MoodBrew scenarios ☕
+This isn't just a demo - it's a comprehensive learning resource with extensive `# LEARNING NOTE:` comments throughout explaining:
+
+- **Rails Conventions**: Why we follow certain patterns and Rails doctrine
+- **MongoDB Concepts**: Document modeling vs relational thinking, embedded documents, indexes
+- **AI Integration**: Service patterns, error handling, fallback strategies
+- **Testing Strategies**: MongoDB-specific approaches, VCR usage, factory patterns
+- **Background Jobs**: Sidekiq patterns, retry strategies, monitoring
+
+Look for `# LEARNING NOTE:` and `# BEST PRACTICE:` comments as you explore the code.
 
 ---
 
-## 📞 Support
+## Support & Community
 
-- 🐛 **Bug Reports**: [GitHub Issues](https://github.com/yourusername/sea-support/issues)
-- 💡 **Feature Requests**: [GitHub Discussions](https://github.com/yourusername/sea-support/discussions)
-- 📧 **Questions**: Open an issue with the `question` label
-- 📚 **Documentation**: See [CLAUDE.md](CLAUDE.md) for development guidance
+- 🐛 **Found a bug?** [Open an issue](https://github.com/yourusername/sea-support/issues)
+- 💡 **Have an idea?** [Start a discussion](https://github.com/yourusername/sea-support/discussions)
+- ❓ **Need help?** Check the [documentation](CLAUDE.md) or open an issue
+- 📚 **Want to learn more?** Read through the extensive code comments
+
+---
+
+## License
+
+MIT License - feel free to use this for learning, teaching, or as a foundation for your own projects.
 
 ---
 
 <div align="center">
-
-**Built with ❤️ and ☕ for the modern support experience**
-
-[Demo](https://sea-support-demo.com) • [Documentation](CLAUDE.md) • [Contributing](CONTRIBUTING.md)
-
-</div>
+**Built with ❤️ and ☕ to help you learn modern Rails + AI development**
