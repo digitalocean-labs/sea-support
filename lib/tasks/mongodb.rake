@@ -1,5 +1,5 @@
 # lib/tasks/mongodb.rake
-# MongoDB maintenance tasks for SupportIQ
+# MongoDB maintenance tasks for Sea Support
 
 namespace :mongodb do
   desc 'Create all MongoDB indexes defined in models'

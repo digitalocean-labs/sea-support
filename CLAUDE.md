@@ -4,7 +4,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Project Overview
 
-SupportIQ is a comprehensive AI-powered customer support tool built as an educational Rails 8 + MongoDB application. It demonstrates modern web development practices with sophisticated AI integration for ticket management, automated classification, intelligent response suggestions, and demo data generation. The application serves as a learning platform showcasing Rails conventions, MongoDB document modeling, DigitalOcean AI service integration patterns, and advanced background job processing with comprehensive debugging capabilities.
+Sea Support is a comprehensive AI-powered customer support tool built as an educational Rails 8 + MongoDB application. It demonstrates modern web development practices with sophisticated AI integration for ticket management, automated classification, intelligent response suggestions, and demo data generation. The application serves as a learning platform showcasing Rails conventions, MongoDB document modeling, DigitalOcean AI service integration patterns, and advanced background job processing with comprehensive debugging capabilities.
 
 ## Architecture & Technology Stack
 
@@ -265,7 +265,7 @@ end
 
 ### Environment Setup
 - **Development**: Uses local MongoDB or DigitalOcean connection
-- **Test**: Separate test database (supportiq_test) 
+- **Test**: Separate test database (sea_support_test) 
 - **Production**: DigitalOcean Managed MongoDB with SSL
 
 ## Common Development Tasks

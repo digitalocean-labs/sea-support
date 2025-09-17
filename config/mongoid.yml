@@ -11,9 +11,9 @@ development:
     default:
       # LEARNING NOTE: Using Environment Variables
       # This allows us to use different databases without changing code
-      # For local development: mongodb://localhost:27017/supportiq_development
-      # For DigitalOcean: mongodb+srv://user:pass@cluster.mongodb.net/supportiq_dev
-      uri: <%= ENV['MONGODB_URI'] || 'mongodb://localhost:27017/supportiq_development' %>
+      # For local development: mongodb://localhost:27017/sea_support_development
+      # For DigitalOcean: mongodb+srv://user:pass@cluster.mongodb.net/sea_support_dev
+      uri: <%= ENV['MONGODB_URI'] || 'mongodb://localhost:27017/sea_support_development' %>
       
       options:
         # BEST PRACTICE: Connection pooling
@@ -55,7 +55,7 @@ test:
     default:
       # LEARNING NOTE: Use DigitalOcean MongoDB for tests
       # We'll use a separate test database on the same cluster
-      uri: <%= ENV['MONGODB_URI']&.gsub('/admin', '/supportiq_test') || 'mongodb://localhost:27017/supportiq_test' %>
+      uri: <%= ENV['MONGODB_URI']&.gsub('/admin', '/sea_support_test') || 'mongodb://localhost:27017/sea_support_test' %>
       options:
         # TESTING TIP: Use primary read preference for consistency
         read:

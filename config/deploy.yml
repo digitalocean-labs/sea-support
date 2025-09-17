@@ -1,8 +1,8 @@
 # Name of your application. Used to uniquely configure containers.
-service: supportiq
+service: sea-support
 
 # Name of the container image.
-image: your-user/supportiq
+image: your-user/sea-support
 
 # Deploy to these servers.
 servers:

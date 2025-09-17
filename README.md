@@ -1,4 +1,4 @@
-# SupportIQ ☕ 
+# Sea Support 🌊
 ### AI-Powered Customer Support Platform for MoodBrew Coffee Machines
 
 [![Rails](https://img.shields.io/badge/Rails-8.0+-red.svg)](https://rubyonrails.org/)
@@ -8,11 +8,11 @@
 
 ---
 
-## 🎯 What is SupportIQ?
+## 🎯 What is Sea Support?
 
-SupportIQ is a comprehensive AI-powered customer support platform that demonstrates modern web development with sophisticated AI integration. Built as an educational Rails 8 + MongoDB application, it showcases how artificial intelligence can transform customer support operations while maintaining human oversight and control.
+Sea Support is a comprehensive AI-powered customer support platform that demonstrates modern web development with sophisticated AI integration. Built as an educational Rails 8 + MongoDB application, it showcases how artificial intelligence can transform customer support operations while maintaining human oversight and control.
 
-**Demo Context:** The application manages support tickets for **MoodBrew** - a fictional AI-powered smart coffee machine that detects users' moods and brews the perfect coffee accordingly. From "morning monster" emergencies to "hangover mode" feature requests, SupportIQ handles it all with intelligence and humor.
+**Demo Context:** The application manages support tickets for **MoodBrew** - a fictional AI-powered smart coffee machine that detects users' moods and brews the perfect coffee accordingly. From "morning monster" emergencies to "hangover mode" feature requests, Sea Support handles it all with intelligence and humor.
 
 ### ✨ Key Features
 
@@ -40,8 +40,8 @@ SupportIQ is a comprehensive AI-powered customer support platform that demonstra
 
 1. **Clone the repository**
    ```bash
-   git clone https://github.com/yourusername/supportiq.git
-   cd supportiq
+   git clone https://github.com/yourusername/sea-support.git
+   cd sea-support
    ```
 
 2. **Install dependencies**
@@ -75,10 +75,10 @@ SupportIQ is a comprehensive AI-powered customer support platform that demonstra
    nano config/mongoid.yml
    
    # For local MongoDB:
-   # MONGODB_URI=mongodb://localhost:27017/supportiq_development
-   
+   # MONGODB_URI=mongodb://localhost:27017/sea_support_development
+
    # For DigitalOcean Managed MongoDB:
-   # MONGODB_URI=mongodb+srv://user:pass@cluster.mongodb.net/supportiq
+   # MONGODB_URI=mongodb+srv://user:pass@cluster.mongodb.net/sea_support
    ```
 
 6. **Initialize the database**
@@ -255,7 +255,7 @@ end
 
 ## 🧪 Demo Scenarios
 
-SupportIQ comes with engaging MoodBrew support scenarios that showcase different AI capabilities:
+Sea Support comes with engaging MoodBrew support scenarios that showcase different AI capabilities:
 
 ### High-Priority Emergencies
 ```
@@ -391,14 +391,14 @@ The codebase includes extensive `# LEARNING NOTE:` comments explaining:
 
 ```bash
 # Build image
-docker build -t supportiq .
+docker build -t sea-support .
 
 # Run with environment
 docker run -p 3000:3000 \
   -e MONGODB_URI=your_mongo_uri \
   -e DO_AGENT_ENDPOINT=your_agent_endpoint \
   -e DO_AGENT_ACCESS_KEY=your_agent_key \
-  supportiq
+  sea-support
 ```
 
 ---
@@ -439,8 +439,8 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 
 ## 📞 Support
 
-- 🐛 **Bug Reports**: [GitHub Issues](https://github.com/yourusername/supportiq/issues)
-- 💡 **Feature Requests**: [GitHub Discussions](https://github.com/yourusername/supportiq/discussions)
+- 🐛 **Bug Reports**: [GitHub Issues](https://github.com/yourusername/sea-support/issues)
+- 💡 **Feature Requests**: [GitHub Discussions](https://github.com/yourusername/sea-support/discussions)
 - 📧 **Questions**: Open an issue with the `question` label
 - 📚 **Documentation**: See [CLAUDE.md](CLAUDE.md) for development guidance
 
@@ -450,6 +450,6 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 
 **Built with ❤️ and ☕ for the modern support experience**
 
-[Demo](https://supportiq-demo.com) • [Documentation](CLAUDE.md) • [Contributing](CONTRIBUTING.md)
+[Demo](https://sea-support-demo.com) • [Documentation](CLAUDE.md) • [Contributing](CONTRIBUTING.md)
 
 </div>
