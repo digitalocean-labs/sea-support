@@ -72,7 +72,16 @@ class ApplicationController < ActionController::Base
   def store_location_for_redirect
     # LEARNING NOTE: Friendly redirects after login
     # Remember where user was trying to go, redirect there after login
-    session[:return_to] = request.original_url if request.get?
+    # DEFENSIVE PROGRAMMING: Only store location if we have a valid GET request
+    return unless defined?(request) && request.respond_to?(:get?)
+
+    begin
+      session[:return_to] = request.original_url if request.get?
+    rescue StandardError => e
+      # LEARNING NOTE: Graceful degradation - log error but don't break the flow
+      # This can happen in test environments or edge cases
+      Rails.logger.warn "Failed to store location for redirect: #{e.message}"
+    end
   end
   
   def redirect_back_or_default(default = root_path)
