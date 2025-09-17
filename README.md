@@ -24,12 +24,12 @@ We've built it around **MoodBrew** - an imaginary smart coffee machine that read
 
 ### Key Features
 
-🤖 **Smart Ticket Analysis** - AI automatically tags, prioritizes, and analyzes tickets
-📝 **Response Suggestions** - Generate helpful customer replies with confidence scoring
-🎭 **Demo Generator** - Create realistic support scenarios instantly
-📊 **Performance Tracking** - Monitor AI accuracy and agent productivity
-🔍 **Full-Text Search** - MongoDB text indexes for fast ticket searches
-⚡ **Real-Time Processing** - Background jobs with detailed status monitoring
+- 🤖 **Smart Ticket Analysis** - AI automatically tags, prioritizes, and analyzes tickets
+- 📝 **Response Suggestions** - Generate helpful customer replies with confidence scoring
+- 🎭 **Demo Generator** - Create realistic support scenarios instantly
+- 📊 **Performance Tracking** - Monitor AI accuracy and agent productivity
+- 🔍 **Full-Text Search** - MongoDB text indexes for fast ticket searches
+- ⚡ **Real-Time Processing** - Background jobs with detailed status monitoring
 
 ![support_tickets_dashboard_with_ai_analysis](https://github.com/user-attachments/assets/ce3e8850-6647-4cd3-9b7e-0078e3216a89)
 
