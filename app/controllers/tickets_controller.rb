@@ -24,12 +24,20 @@ class TicketsController < ApplicationController
 
     # Filter by status
     if @q[:status].present? && @q[:status] != "all"
-      @tickets = @tickets.where(status: @q[:status])
+      # Only allow valid statuses
+      valid_statuses = %w[new in_progress resolved closed]
+      if valid_statuses.include?(@q[:status])
+        @tickets = @tickets.where(status: @q[:status])
+      end
     end
 
     # Filter by priority
     if @q[:priority].present? && @q[:priority] != "all"
-      @tickets = @tickets.where(priority: @q[:priority])
+      # Only allow valid priorities
+      valid_priorities = %w[low medium high urgent]
+      if valid_priorities.include?(@q[:priority])
+        @tickets = @tickets.where(priority: @q[:priority])
+      end
     end
 
     # Filter by category
@@ -70,47 +78,23 @@ class TicketsController < ApplicationController
       @tickets = @tickets.where(assigned_agent_id: current_agent.id)
     end
 
-    # Handle sorting
-    sort_field = params[:sort] || "created_at"
-    sort_direction = params[:direction] || "desc"
+    # Apply sorting
+    @tickets = apply_sorting(@tickets)
 
-    # Validate sort field to prevent injection
-    valid_sort_fields = %w[created_at updated_at status priority subject customer_name]
-    sort_field = "created_at" unless valid_sort_fields.include?(sort_field)
+    # Add pagination - IMPORTANT: Do this LAST, after filters and sorting
+    @tickets = @tickets.page(params[:page]).per(25)
 
-    # Validate sort direction
-    sort_direction = "desc" unless %w[asc desc].include?(sort_direction)
-
-    # Apply sorting with special handling for embedded fields
-    if sort_field == "customer_name"
-      # Sort by embedded document field
-      @tickets = @tickets.order_by("customer_info.customer_name" => sort_direction.to_sym)
-    else
-      # Regular field sorting
-      @tickets = @tickets.order_by(sort_field.to_sym => sort_direction.to_sym)
-    end
-
-    # Store sort params for view
-    @sort_field = sort_field
-    @sort_direction = sort_direction
-
-    # MOODBREW FEATURE: Show ticket statistics with AI workflow metrics
-    total_count = Ticket.count
-    analyzed_count = Ticket.where(:ai_analysis.exists => true).count
-
+    # Statistics (use unpaginated scope)
+    all_tickets = apply_filters(Ticket.all)  # For accurate stats
     @stats = {
-      total: total_count,
-      new: Ticket.where(status: "new").count,
-      in_progress: Ticket.where(status: "in_progress").count,
-      resolved: Ticket.where(status: "resolved").count,
-      urgent: Ticket.where(priority: "urgent").count,
-      ai_analyzed: analyzed_count,
-      unanalyzed: total_count - analyzed_count,
-      analysis_progress: total_count > 0 ? ((analyzed_count.to_f / total_count) * 100).round : 0
+      total: all_tickets.count,
+      new: all_tickets.where(status: "new").count,
+      in_progress: all_tickets.where(status: "in_progress").count,
+      resolved: all_tickets.where(status: "resolved").count,
+      urgent: all_tickets.where(priority: "urgent").count,
+      ai_analyzed: all_tickets.where(:ai_analysis.exists => true).count,
+      unanalyzed: all_tickets.where(:ai_analysis.exists => false).count
     }
-
-    # Get all agents for filter dropdown
-    @agents = Agent.all.order_by(name: :asc)
   end
 
   def show
@@ -837,5 +821,103 @@ class TicketsController < ApplicationController
         :moodbrew_serial, :purchase_date, :warranty_status
       ]
     )
+  end
+
+  def apply_filters(tickets)
+    # Apply search, status, priority, category, AI response status, and agent filters
+    q = params[:q] || {}
+
+    # Search by ticket number or subject
+    if q[:search].present?
+      search_term = q[:search]
+      tickets = tickets.where(
+        "$or" => [
+          { ticket_number: /#{Regexp.escape(search_term)}/i },
+          { subject: /#{Regexp.escape(search_term)}/i }
+        ]
+      )
+    end
+
+    # Filter by status
+    if q[:status].present? && q[:status] != "all"
+      # Only allow valid statuses
+      valid_statuses = %w[new in_progress resolved closed]
+      if valid_statuses.include?(q[:status])
+        tickets = tickets.where(status: q[:status])
+      end
+    end
+
+    # Filter by priority
+    if q[:priority].present? && q[:priority] != "all"
+      # Only allow valid priorities
+      valid_priorities = %w[low medium high urgent]
+      if valid_priorities.include?(q[:priority])
+        tickets = tickets.where(priority: q[:priority])
+      end
+    end
+
+    # Filter by category
+    if q[:issue_category].present? && q[:issue_category] != "all"
+      tickets = tickets.where(issue_category: q[:issue_category])
+    end
+
+    # Filter by AI response status
+    if q[:ai_response_status].present? && q[:ai_response_status] != "all"
+      case q[:ai_response_status]
+      when "has_response"
+        tickets = tickets.where("ai_analysis.suggested_response" => { "$exists" => true, "$nin" => [ nil, "" ] })
+      when "no_response"
+        tickets = tickets.where("$or" => [
+          { ai_analysis: { "$exists" => false } },
+          { "ai_analysis.suggested_response" => { "$exists" => false } },
+          { "ai_analysis.suggested_response" => { "$in" => [ nil, "" ] } }
+        ])
+      when "high_confidence"
+        tickets = tickets.where("ai_analysis.confidence_score" => { "$gte" => 0.85 })
+      when "auto_respondable"
+        # Auto-respondable: has suggested response AND high confidence
+        tickets = tickets.where(
+          "ai_analysis.suggested_response" => { "$exists" => true, "$nin" => [ nil, "" ] },
+          "ai_analysis.confidence_score" => { "$gte" => 0.85 }
+        )
+      end
+    end
+
+    # Filter by assigned agent (if not admin, show only assigned tickets)
+    if current_agent.admin?
+      # Admin can filter by specific agent or see all
+      if q[:assigned_agent_id].present? && q[:assigned_agent_id] != "all"
+        tickets = tickets.where(assigned_agent_id: q[:assigned_agent_id])
+      end
+    else
+      # Non-admin agents only see their assigned tickets
+      tickets = tickets.where(assigned_agent_id: current_agent.id)
+    end
+
+    tickets
+  end
+
+  def apply_sorting(tickets)
+    # Handle sorting
+    sort_field = params[:sort] || "created_at"
+    sort_direction = params[:direction] || "desc"
+
+    # Validate sort field to prevent injection
+    valid_sort_fields = %w[created_at updated_at status priority subject customer_name]
+    sort_field = "created_at" unless valid_sort_fields.include?(sort_field)
+
+    # Validate sort direction
+    sort_direction = "desc" unless %w[asc desc].include?(sort_direction)
+
+    # Apply sorting with special handling for embedded fields
+    if sort_field == "customer_name"
+      # Sort by embedded document field
+      tickets = tickets.order_by("customer_info.customer_name" => sort_direction.to_sym)
+    else
+      # Regular field sorting
+      tickets = tickets.order_by(sort_field.to_sym => sort_direction.to_sym)
+    end
+
+    tickets
   end
 end

@@ -504,6 +504,31 @@
         </div>
       <% end %>
     </div>
+    <!-- Pagination Controls -->
+    <% if @tickets.present? %>
+      <div class="bg-white rounded-lg shadow-sm border border-amber-200 mt-6 px-6 py-4">
+        <div class="flex items-center justify-between">
+          <!-- Page Info -->
+          <div class="text-sm text-gray-700">
+            Showing
+            <span class="font-medium"><%= (@tickets.current_page - 1) * @tickets.limit_value + 1 %></span>
+            to
+            <span class="font-medium"><%= [(@tickets.current_page) * @tickets.limit_value, @tickets.total_count].min %></span>
+            of
+            <span class="font-medium"><%= @tickets.total_count %></span>
+            tickets
+          </div>
+
+          <!-- Page Navigation -->
+          <div class="flex space-x-2">
+            <%= paginate @tickets, theme: 'foundation',
+                params: { q: params[:q] },
+                outer_window: 1,
+                window: 2 %>
+          </div>
+        </div>
+      </div>
+    <% end %>
   </div>
 </div>
 

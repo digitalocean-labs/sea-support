@@ -1,0 +1,34 @@
+RubyGems Environment:
+  - RUBYGEMS VERSION: 3.6.9
+  - RUBY VERSION: 3.4.5 (2025-07-16 patchlevel 51) [x86_64-linux]
+  - INSTALLATION DIRECTORY: /usr/lib/ruby/gems/3.4.0
+  - USER INSTALLATION DIRECTORY: /home/dinu/.local/share/gem/ruby/3.4.0
+  - CREDENTIALS FILE: /home/dinu/.local/share/gem/credentials
+  - RUBY EXECUTABLE: /usr/bin/ruby
+  - GIT EXECUTABLE: /usr/bin/git
+  - EXECUTABLE DIRECTORY: /usr/bin
+  - SPEC CACHE DIRECTORY: /home/dinu/.cache/gem/specs
+  - SYSTEM CONFIGURATION DIRECTORY: /etc
+  - RUBYGEMS PLATFORMS:
+     - ruby
+     - x86_64-linux
+  - GEM PATHS:
+     - /usr/lib/ruby/gems/3.4.0
+     - /home/dinu/.local/share/gem/ruby/3.4.0
+  - GEM CONFIGURATION:
+     - :update_sources => true
+     - :verbose => true
+     - :backtrace => true
+     - :bulk_threshold => 1000
+     - "gem" => "--user-install"
+  - REMOTE SOURCES:
+     - https://rubygems.org/
+  - SHELL PATH:
+     - /usr/local/sbin
+     - /usr/local/bin
+     - /usr/bin
+     - /var/lib/flatpak/exports/bin
+     - /usr/lib/jvm/default/bin
+     - /usr/bin/site_perl
+     - /usr/bin/vendor_perl
+     - /usr/bin/core_perl
