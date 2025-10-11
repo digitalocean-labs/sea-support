@@ -29,8 +29,8 @@ if Rails.env.development?
     Ticket.create!(
       subject: "Test Ticket #{i + 100}",
       description: "This is test ticket #{i + 100} for pagination",
-      status: ['new', 'in_progress', 'resolved'].sample,
-      priority: ['low', 'medium', 'high', 'urgent'].sample,
+      status: [ 'new', 'in_progress', 'resolved' ].sample,
+      priority: [ 'low', 'medium', 'high', 'urgent' ].sample,
       customer_info: CustomerInfo.new(
         customer_name: Faker::Name.name,
         email: Faker::Internet.email

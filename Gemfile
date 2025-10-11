@@ -51,9 +51,9 @@ gem "kamal", require: false
 gem "thruster", require: false
 
 # Pagination for ticket lists
-gem 'kaminari', '~> 1.2'
-gem 'kaminari-mongoid', '~> 1.0'  # MongoDB adapter for Kaminari
-gem 'kaminari-bootstrap'
+gem "kaminari", "~> 1.2"
+gem "kaminari-mongoid", "~> 1.0"  # MongoDB adapter for Kaminari
+gem "kaminari-bootstrap"
 
 
 

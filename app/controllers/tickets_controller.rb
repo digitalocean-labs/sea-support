@@ -88,10 +88,10 @@ class TicketsController < ApplicationController
     all_tickets = apply_filters(Ticket.all)  # For accurate stats
     @stats = {
       total: all_tickets.count,
-      new: all_tickets.where(status: 'new').count,
-      in_progress: all_tickets.where(status: 'in_progress').count,
-      resolved: all_tickets.where(status: 'resolved').count,
-      urgent: all_tickets.where(priority: 'urgent').count,
+      new: all_tickets.where(status: "new").count,
+      in_progress: all_tickets.where(status: "in_progress").count,
+      resolved: all_tickets.where(status: "resolved").count,
+      urgent: all_tickets.where(priority: "urgent").count,
       ai_analyzed: all_tickets.where(:ai_analysis.exists => true).count,
       unanalyzed: all_tickets.where(:ai_analysis.exists => false).count
     }
