@@ -21,6 +21,26 @@ if Rails.env.development?
   puts "    ✅ Cleared #{agent_count} agents (keeping admin)"
 end
 
+# Generate more tickets for pagination testing
+if Rails.env.development?
+  puts "Creating additional tickets for pagination testing..."
+
+  50.times do |i|
+    Ticket.create!(
+      subject: "Test Ticket #{i + 100}",
+      description: "This is test ticket #{i + 100} for pagination",
+      status: ['new', 'in_progress', 'resolved'].sample,
+      priority: ['low', 'medium', 'high', 'urgent'].sample,
+      customer_info: CustomerInfo.new(
+        customer_name: Faker::Name.name,
+        email: Faker::Internet.email
+      )
+    )
+  end
+
+  puts "Created 50 additional test tickets"
+end
+
 # LEARNING NOTE: Create Admin Agent First
 puts "  👤 Creating support agents..."
 
