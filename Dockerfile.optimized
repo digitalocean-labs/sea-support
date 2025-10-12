@@ -1,0 +1,108 @@
+# Multi-stage build for optimized production image
+FROM ruby:3.3-alpine AS base
+
+# Install system dependencies
+RUN apk add --no-cache \
+    build-base \
+    git \
+    nodejs \
+    npm \
+    tzdata \
+    curl \
+    bash \
+    && rm -rf /var/cache/apk/*
+
+WORKDIR /app
+
+# Install bundler
+RUN gem install bundler:2.5.6
+
+# Development stage
+FROM base AS development
+
+# Install development dependencies
+RUN apk add --no-cache \
+    postgresql-dev \
+    sqlite-dev \
+    && rm -rf /var/cache/apk/*
+
+COPY Gemfile Gemfile.lock ./
+RUN bundle config set --local without 'production' && \
+    bundle install --jobs 4 --retry 3
+
+COPY package*.json ./
+RUN npm install
+
+COPY . .
+
+CMD ["bin/dev"]
+
+# Production dependencies stage
+FROM base AS prod-deps
+
+COPY Gemfile Gemfile.lock ./
+RUN bundle config set --local deployment 'true' && \
+    bundle config set --local without 'development test' && \
+    bundle install --jobs 4 --retry 3 && \
+    bundle clean --force && \
+    rm -rf /usr/local/bundle/cache/*.gem && \
+    find /usr/local/bundle/gems/ -name "*.c" -delete && \
+    find /usr/local/bundle/gems/ -name "*.o" -delete
+
+# Assets stage
+FROM base AS assets
+
+COPY Gemfile Gemfile.lock ./
+RUN bundle config set --local deployment 'true' && \
+    bundle config set --local without 'development test' && \
+    bundle install --jobs 4 --retry 3
+
+COPY package*.json ./
+RUN npm ci --only=production
+
+COPY . .
+
+# Precompile assets
+ENV RAILS_ENV=production
+ENV SECRET_KEY_BASE=dummy
+RUN bundle exec rails assets:precompile && \
+    rm -rf node_modules tmp/cache
+
+# Production stage
+FROM ruby:3.3-alpine AS production
+
+# Install runtime dependencies only
+RUN apk add --no-cache \
+    tzdata \
+    curl \
+    bash \
+    && rm -rf /var/cache/apk/*
+
+# Create app user
+RUN addgroup -g 1000 -S app && \
+    adduser -u 1000 -S app -G app
+
+WORKDIR /app
+
+# Copy bundled gems
+COPY --from=prod-deps /usr/local/bundle /usr/local/bundle
+
+# Copy precompiled assets
+COPY --from=assets /app/public /app/public
+
+# Copy application code
+COPY --chown=app:app . .
+
+# Set ownership
+RUN chown -R app:app /app
+
+USER app
+
+# Health check
+HEALTHCHECK --interval=30s --timeout=3s --start-period=5s --retries=3 \
+  CMD curl -f http://localhost:3000/health || exit 1
+
+EXPOSE 3000
+
+# Use Puma for production
+CMD ["bundle", "exec", "puma", "-C", "config/puma.rb"]
