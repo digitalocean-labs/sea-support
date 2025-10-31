@@ -68,7 +68,7 @@ group :development, :test do
   # LEARNING NOTE: Testing Stack
   # RSpec is the most popular testing framework for Rails (alternative to Minitest)
   # It provides a more readable DSL (Domain Specific Language) for tests
-  gem "rspec-rails", "~> 7.1"
+  gem "rspec-rails", "~> 8.0"
 
   # Rails controller testing helpers (assigns, render_template, etc.)
   gem "rails-controller-testing"
